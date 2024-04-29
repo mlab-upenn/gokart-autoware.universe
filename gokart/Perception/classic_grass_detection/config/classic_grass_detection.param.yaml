@@ -1,0 +1,8 @@
+/**:
+  ros__parameters:
+    bev_width: 500
+    bev_height: 700
+    bev_origin_x: 250
+    bev_origin_y: 700
+    px_dist: 0.04
+

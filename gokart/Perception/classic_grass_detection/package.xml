@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>classic_grass_detection</name>
+  <version>0.1.0</version>
+  <description>classic_grass_detection</description>
+  <maintainer email="pojenwang@autoware.org">Po-Jen Wang</maintainer>
+
+  <license>Apache License 2.0</license>
+  <author email="pojenwang@autoware.org">Po-Jen Wang</author>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <depend>sensor_msgs</depend>
+  <depend>cv_bridge</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  
+  <build_depend>autoware_cmake</build_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
