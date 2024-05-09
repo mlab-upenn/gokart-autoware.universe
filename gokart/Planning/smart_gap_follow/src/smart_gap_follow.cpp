@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "classic_grass_detection/classic_grass_detection_node.hpp"
+#include "smart_gap_follow_node/smart_gap_follow_node.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "cv_bridge/cv_bridge.h"
@@ -45,15 +45,15 @@ bool update_param(
 
 }  // namespace
 
-namespace classic_grass_detection
+namespace smart_gap_follow
 {
 
-ClassicGrassDetectionNode::ClassicGrassDetectionNode(const rclcpp::NodeOptions & node_options)
-: Node("classic_grass_detection", node_options)
+SmartGapFollowNode::SmartGapFollowNode(const rclcpp::NodeOptions & node_options)
+: Node("smart_gap_follow", node_options)
 {
   // Parameter Server
   set_param_res_ = this->add_on_set_parameters_callback(
-    std::bind(&ClassicGrassDetectionNode::onSetParam, this, std::placeholders::_1));
+    std::bind(&SmartGapFollowNode::onSetParam, this, std::placeholders::_1));
 
   // Node Parameter
   node_param_.bev_width = declare_parameter<int>("bev_width");
@@ -80,12 +80,12 @@ ClassicGrassDetectionNode::ClassicGrassDetectionNode(const rclcpp::NodeOptions &
   node_param_.scan_angle_max = declare_parameter<double>("scan_angle_max");
   node_param_.scan_range_min = declare_parameter<double>("scan_range_min");
   node_param_.scan_range_max = declare_parameter<double>("scan_range_max");
-  node_param_.ray_step_size = declare_parameter<int>("ray_step_size");
+  node_param_.ray_dist_step = declare_parameter<int>("ray_dist_step");
 
   // Subscriber
   sub_image_ = create_subscription<sensor_msgs::msg::Image>(
     "~/input/image", rclcpp::QoS{1},
-    std::bind(&ClassicGrassDetectionNode::onImage, this, std::placeholders::_1));
+    std::bind(&SmartGapFollowNode::onImage, this, std::placeholders::_1));
 
   // Publisher
   //pub_image_ = create_publisher<sensor_msgs::msg::Image>("~/output/image", 1);
@@ -95,8 +95,9 @@ ClassicGrassDetectionNode::ClassicGrassDetectionNode(const rclcpp::NodeOptions &
     "~/out/grass_scan", rclcpp::SensorDataQoS());
 }
 
-void ClassicGrassDetectionNode::onImage(const sensor_msgs::msg::Image::ConstSharedPtr image_)
+void SmartGapFollowNode::onImage(const sensor_msgs::msg::Image::ConstSharedPtr image_)
 {
+  
   cv::Size bev_size = cv::Size(node_param_.bev_width, node_param_.bev_height);
   std::vector<int64_t> bev_origin = node_param_.bev_origin;
   double px_dist = node_param_.px_dist;
@@ -121,7 +122,7 @@ void ClassicGrassDetectionNode::onImage(const sensor_msgs::msg::Image::ConstShar
   double scan_angle_max = node_param_.scan_angle_max;
   double scan_range_min = node_param_.scan_range_min;
   double scan_range_max = node_param_.scan_range_max;
-  int ray_step_size = node_param_.ray_step_size;
+  int ray_dist_step = node_param_.ray_dist_step;
   
   cv::Point2f img_coords[4];
 	cv::Point2f bev_coords[4];
@@ -214,7 +215,7 @@ void ClassicGrassDetectionNode::onImage(const sensor_msgs::msg::Image::ConstShar
         scan_data[i] = ray_dist_px * px_dist;
         break;
       }
-      ray_dist_px += ray_step_size;
+      ray_dist_px += ray_dist_step;
     }
   }
 
@@ -243,7 +244,7 @@ void ClassicGrassDetectionNode::onImage(const sensor_msgs::msg::Image::ConstShar
   pub_test_image_.publish(pub_test_image_msg.toImageMsg());
 }
 
-rcl_interfaces::msg::SetParametersResult ClassicGrassDetectionNode::onSetParam(
+rcl_interfaces::msg::SetParametersResult SmartGapFollowNode::onSetParam(
   const std::vector<rclcpp::Parameter> & params)
 {
   rcl_interfaces::msg::SetParametersResult result;
@@ -256,8 +257,8 @@ rcl_interfaces::msg::SetParametersResult ClassicGrassDetectionNode::onSetParam(
       // Update params
       update_param(params, "bev_width", p.bev_width);
       update_param(params, "bev_height", p.bev_height);
-      //update_param(params, "bev_origin", p.bev_origin);
-      //update_param(params, "px_dist", p.px_dist);
+      update_param(params, "bev_origin", p.bev_origin);
+      update_param(params, "px_dist", p.px_dist);
     }
   } catch (const rclcpp::exceptions::InvalidParameterTypeException & e) {
     result.successful = false;
@@ -272,4 +273,4 @@ rcl_interfaces::msg::SetParametersResult ClassicGrassDetectionNode::onSetParam(
 }  // namespace radar_object_clustering
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(classic_grass_detection::ClassicGrassDetectionNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(smart_gap_follow::SmartGapFollowNode)

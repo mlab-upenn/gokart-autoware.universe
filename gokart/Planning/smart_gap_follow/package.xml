@@ -1,22 +1,23 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>classic_grass_detection</name>
+  <name>smart_gap_follow</name>
   <version>0.1.0</version>
-  <description>classic_grass_detection</description>
-  <maintainer email="pojen.wang@autoware.org">Po-Jen Wang</maintainer>
+  <description>Nodes to analyze lidar data and follow gap</description>
 
+  <maintainer email="pojen.wang@autoware.org">Po-Jen Wang</maintainer>
   <license>Apache License 2.0</license>
-  <author email="pojen.wang@autoware.org">Po-Jen Wang</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
-
-  <depend>sensor_msgs</depend>
+  
   <depend>cv_bridge</depend>
+  <depend>ackermann_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>visualization_msgs</depend>
   <depend>image_transport</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
-  
+
   <build_depend>autoware_cmake</build_depend>
 
   <export>

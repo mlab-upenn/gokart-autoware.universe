@@ -1,10 +1,10 @@
 <launch>
   <arg name="input/image" default="~/input/image"/>
   <arg name="output/image" default="~/output/image"/>
-  <arg name="param_path" default="$(find-pkg-share classic_grass_detection)/config/classic_grass_detection_sim.param.yaml"/>
+  <arg name="param_path" default="$(find-pkg-share smart_gap_follow)/config/smart_gap_follow_sim.param.yaml"/>
 
   <!-- Node -->
-  <node pkg="classic_grass_detection" exec="classic_grass_detection_node" name="classic_grass_detection" output="screen">
+  <node pkg="smart_gap_follow" exec="smart_gap_follow_node" name="smart_gap_follow" output="screen">
     <remap from="~/input/image" to="/kart/camera"/>
     <remap from="~/output/image" to="$(var output/image)"/>
     <param from="$(var param_path)"/>

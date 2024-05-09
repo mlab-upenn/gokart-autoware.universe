@@ -26,41 +26,54 @@
 #include <string>
 #include <vector>
 
-namespace classic_grass_detection
+namespace smart_gap_follow
 {
 
-class ClassicGrassDetectionNode : public rclcpp::Node
+class SmartGapFollowNode : public rclcpp::Node
 {
 public:
-  explicit ClassicGrassDetectionNode(const rclcpp::NodeOptions & node_options);
+  explicit SmartGapFollowNode(const rclcpp::NodeOptions & node_options);
 
   struct NodeParam
   {
-    int bev_width{};
-    int bev_height{};
     std::vector<int64_t> bev_origin{};
     double px_dist{};
-    double grass_b_weight{};
-    double grass_g_weight{};
-    double cone_b_weight{};
-    double cone_r_weight{};
-    int grass_thres{};
-    int cone_thres{};
-    double cone_base_ratio{};
-    std::vector<int64_t> img_bot_left{};
-    std::vector<int64_t> img_top_left{};
-    std::vector<int64_t> img_top_right{};
-    std::vector<int64_t> img_bot_right{};
-    std::vector<double> world_bot_left{};
-    std::vector<double> world_top_left{};
-    std::vector<double> world_top_right{};
-    std::vector<double> world_bot_right{};
+    double car_width{};
+    double car_length{};
+    double car_back_to_drive_axle{};
+    double car_back_to_steer_axle{};
     double scan_angle_increment{};
     double scan_angle_min{};
     double scan_angle_max{};
     double scan_range_min{};
     double scan_range_max{};
+    double dead_end_scan_range_max{};
     int ray_step_size{};
+    double min_gap_size{};
+    double goal_angle{};
+    double wall_follow_clearance_min{};
+    double wall_follow_clearance_max{};
+    double min_speed{};
+    double slow_speed{};
+    double max_speed{};
+  };
+
+  struct Pos
+  {
+    double x;
+    double y;
+  };
+
+  struct Scan
+  {
+    std::vector<double> scan_ranges;
+    std::vector<std::pair<int, int>> gap_indexes;
+    std::pair<int, int> target_gap_idx;
+    std::pair<Pos, Pos> target_gap_pos;
+    double target_gap_length;
+    double dist_to_target_gap;
+    bool cross_over;
+    bool deadend;
   };
 
 private:
@@ -70,6 +83,10 @@ private:
   // Callback
   void onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg);
 
+  Scan getScanAtPose();
+  
+  void analyzeScan(Scan& scan);
+
   // Data Buffer
   sensor_msgs::msg::Image::ConstSharedPtr image_{};
 
@@ -77,7 +94,7 @@ private:
   //rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_image_{};
   image_transport::Publisher pub_image_;
   image_transport::Publisher pub_test_image_;
-  std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::LaserScan>> pub_grass_scan_;
+  //std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::LaserScan>> pub_grass_scan_;
 
   // Parameter Server
   OnSetParametersCallbackHandle::SharedPtr set_param_res_;
@@ -86,6 +103,7 @@ private:
 
   // Parameter
   NodeParam node_param_{};
+
 };
 
 }  // namespace classic_grass_detection
