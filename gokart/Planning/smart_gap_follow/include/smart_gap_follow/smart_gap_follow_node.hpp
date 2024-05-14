@@ -13,11 +13,12 @@
 // limitations under the License.
 
 #include "rclcpp/rclcpp.hpp"
-
+#include "ackermann_msgs/msg/ackermann_drive_stamped.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
-#include <image_transport/image_transport.hpp>
-#include <image_transport/subscriber_filter.hpp>
+#include "geometry_msgs/msg/point.hpp"
+#include "image_transport/image_transport.hpp"
+#include "image_transport/subscriber_filter.hpp"
 #include "opencv2/core.hpp"
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
@@ -28,7 +29,14 @@
 
 namespace smart_gap_follow
 {
-
+/*
+using geometry_msgs::msg::Pose;
+using ackermann_msgs::msg::AckermannDriveStamped;
+using geometry_msgs::msg::Point;
+using sensor_msgs::msg::LaserScan;
+using std::vector;
+using std::pair;
+*/
 class SmartGapFollowNode : public rclcpp::Node
 {
 public:
@@ -42,13 +50,9 @@ public:
     double car_length{};
     double car_back_to_drive_axle{};
     double car_back_to_steer_axle{};
-    double scan_angle_increment{};
-    double scan_angle_min{};
-    double scan_angle_max{};
-    double scan_range_min{};
-    double scan_range_max{};
-    double dead_end_scan_range_max{};
-    int ray_step_size{};
+    double steering_speed{};
+    double range_thresh_min{};
+    double range_thresh_max{};
     double min_gap_size{};
     double goal_angle{};
     double wall_follow_clearance_min{};
@@ -57,11 +61,14 @@ public:
     double slow_speed{};
     double max_speed{};
   };
-
-  struct Pos
+  /*
+  struct Pose
   {
-    double x;
-    double y;
+    int x_px;
+    int y_px;
+    double x_world;
+    double y_world;
+    double orientation;
   };
 
   struct Scan
@@ -75,25 +82,28 @@ public:
     bool cross_over;
     bool deadend;
   };
-
+  */
 private:
   // Subscriber
-  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_image_{};
+  rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr sub_scan_{};
+  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_cam_image_{};
+  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_track_bev_{};
 
   // Callback
-  void onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg);
-
-  Scan getScanAtPose();
-  
-  void analyzeScan(Scan& scan);
+  void onScan(const sensor_msgs::msg::LaserScan::ConstSharedPtr msg);
+  void onCamImage(const sensor_msgs::msg::Image::ConstSharedPtr msg);
+  void onTrackBev(const sensor_msgs::msg::Image::ConstSharedPtr msg);
 
   // Data Buffer
-  sensor_msgs::msg::Image::ConstSharedPtr image_{};
+  sensor_msgs::msg::LaserScan::ConstSharedPtr scan_{};
+  sensor_msgs::msg::Image::ConstSharedPtr cam_image_{};
+  sensor_msgs::msg::Image::ConstSharedPtr track_bev_{};
 
   // Publisher
   //rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_image_{};
-  image_transport::Publisher pub_image_;
-  image_transport::Publisher pub_test_image_;
+  image_transport::Publisher pub_planning_cam_;
+  image_transport::Publisher pub_planning_bev_;
+  rclcpp::Publisher<ackermann_msgs::msg::AckermannDriveStamped>::SharedPtr pub_drive_;
   //std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::LaserScan>> pub_grass_scan_;
 
   // Parameter Server
@@ -101,8 +111,18 @@ private:
   rcl_interfaces::msg::SetParametersResult onSetParam(
     const std::vector<rclcpp::Parameter> & params);
 
+  void findGap(const sensor_msgs::msg::LaserScan::ConstSharedPtr scan_);
+  void findTargetGap(const sensor_msgs::msg::LaserScan::ConstSharedPtr scan_);
+  void calcSteerCmd(const sensor_msgs::msg::LaserScan::ConstSharedPtr scan_);
+
   // Parameter
   NodeParam node_param_{};
+
+  double range_thresh;
+  std::vector<std::pair<int, int>> gap_indices;
+  bool deadend;
+  std::pair<int, int> target_gap_indices;
+  std::pair<geometry_msgs::msg::Point, geometry_msgs::msg::Point> target_gap;
 
 };
 

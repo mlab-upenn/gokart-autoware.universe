@@ -11,10 +11,10 @@
     grass_thres: 20
     cone_thres: 60
     cone_base_ratio: 0.15
-    img_bot_left: [422, 735]
-    img_top_left: [822, 593]
-    img_top_right: [1098, 593]
-    img_bot_right: [1498, 735]
+    img_bot_left: [44, 742]
+    img_top_left: [401, 627]
+    img_top_right: [879, 627]
+    img_bot_right: [1236, 742]
     world_bot_left: [-2.5, 3.0]
     world_top_left: [-2.5, 12.0]
     world_top_right: [2.5, 12.0]

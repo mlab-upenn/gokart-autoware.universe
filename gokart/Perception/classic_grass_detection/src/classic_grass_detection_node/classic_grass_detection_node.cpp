@@ -83,16 +83,15 @@ ClassicGrassDetectionNode::ClassicGrassDetectionNode(const rclcpp::NodeOptions &
   node_param_.ray_step_size = declare_parameter<int>("ray_step_size");
 
   // Subscriber
-  sub_image_ = create_subscription<sensor_msgs::msg::Image>(
+  sub_cam_image_ = create_subscription<sensor_msgs::msg::Image>(
     "~/input/image", rclcpp::QoS{1},
     std::bind(&ClassicGrassDetectionNode::onImage, this, std::placeholders::_1));
 
   // Publisher
-  //pub_image_ = create_publisher<sensor_msgs::msg::Image>("~/output/image", 1);
-  pub_image_ = image_transport::create_publisher(this, "~/out/image");
-  pub_test_image_ = image_transport::create_publisher(this, "~/test/image");
-  pub_grass_scan_ = this->create_publisher<sensor_msgs::msg::LaserScan>(
-    "~/out/grass_scan", rclcpp::SensorDataQoS());
+  pub_cam_bev_ = image_transport::create_publisher(this, "~/out/cam_bev");
+  pub_track_bev_ = image_transport::create_publisher(this, "~/out/track_bev");
+  pub_track_scan_ = this->create_publisher<sensor_msgs::msg::LaserScan>(
+    "~/out/track_scan", rclcpp::SensorDataQoS());
 }
 
 void ClassicGrassDetectionNode::onImage(const sensor_msgs::msg::Image::ConstSharedPtr image_)
@@ -192,15 +191,16 @@ void ClassicGrassDetectionNode::onImage(const sensor_msgs::msg::Image::ConstShar
   //fill hole and remove noise
   cv::morphologyEx(grass_mask, grass_mask, cv::MORPH_OPEN, kernel);
   cv::morphologyEx(grass_mask, grass_mask, cv::MORPH_CLOSE, kernel);
+  cv::rectangle(grass_mask, cv::Point(490, 960), cv::Point(1437, 1079), 0, -1, cv::LINE_8);
 
   //bev projection
   cv::Mat bev, bev_grass;
   cv::warpPerspective(img, bev, mat, bev_size, cv::INTER_LINEAR);
-  cv::warpPerspective(grass_mask, bev_grass, mat, bev_size, cv::INTER_LINEAR);
+  cv::warpPerspective(grass_mask, bev_grass, mat, bev_size, cv::INTER_LINEAR); 
 
   //bev to lidar_scan
   const int num_data = int((scan_angle_max - scan_angle_min) / scan_angle_increment) + 1;
-  std::vector<float> scan_data(num_data, scan_range_max);
+  std::vector<float> scan_data(num_data, 1000);
   for(int i = 0; i < num_data; i++){
     int ray_dist_px = int(scan_range_min * px_dist);
     float ray_angle = 90 * M_PI / 180 - scan_angle_max + i * scan_angle_increment;
@@ -217,6 +217,18 @@ void ClassicGrassDetectionNode::onImage(const sensor_msgs::msg::Image::ConstShar
       ray_dist_px += ray_step_size;
     }
   }
+  
+  cv_bridge::CvImage pub_cam_bev_msg;
+  pub_cam_bev_msg.header = image_->header;
+  pub_cam_bev_msg.image = bev;
+  pub_cam_bev_msg.encoding = sensor_msgs::image_encodings::BGR8; //BGR8;
+  pub_cam_bev_.publish(pub_cam_bev_msg.toImageMsg());
+
+  cv_bridge::CvImage pub_track_bev_msg;
+  pub_track_bev_msg.header = image_->header;
+  pub_track_bev_msg.image = bev_grass;
+  pub_track_bev_msg.encoding = sensor_msgs::image_encodings::MONO8; //BGR8;
+  pub_track_bev_.publish(pub_track_bev_msg.toImageMsg());
 
   sensor_msgs::msg::LaserScan pub_laser;
   pub_laser.header.frame_id = "base_link";
@@ -228,19 +240,7 @@ void ClassicGrassDetectionNode::onImage(const sensor_msgs::msg::Image::ConstShar
   pub_laser.range_min = scan_range_min;
   pub_laser.scan_time = 0;
   pub_laser.ranges = scan_data;
-  pub_grass_scan_->publish(pub_laser);
-  
-  cv_bridge::CvImage pub_image_msg;
-  pub_image_msg.header = image_->header;
-  pub_image_msg.image = bev;
-  pub_image_msg.encoding = sensor_msgs::image_encodings::BGR8; //BGR8;
-  pub_image_.publish(pub_image_msg.toImageMsg());
-
-  cv_bridge::CvImage pub_test_image_msg;
-  pub_test_image_msg.header = image_->header;
-  pub_test_image_msg.image = bev_grass;
-  pub_test_image_msg.encoding = sensor_msgs::image_encodings::MONO8; //BGR8;
-  pub_test_image_.publish(pub_test_image_msg.toImageMsg());
+  pub_track_scan_->publish(pub_laser);
 }
 
 rcl_interfaces::msg::SetParametersResult ClassicGrassDetectionNode::onSetParam(

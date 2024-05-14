@@ -2,21 +2,17 @@
   ros__parameters:
     bev_origin: [250, 699]
     px_dist: 0.04
-    car_width: 
-    car_length: 
-    car_back_to_drive_axle: 
-    car_back_to_steer_axle: 
-    scan_angle_increment: 0.00872664625
-    scan_angle_min: -1.5708
-    scan_angle_max: 1.5708
-    scan_range_min: 0.1
-    scan_range_max: 30.0
-    dead_end_scan_range_max: 5.0
-    ray_step_size: 1
+    car_width: 1.32
+    car_length: 2.0
+    car_back_to_drive_axle: 0.43
+    car_back_to_steer_axle: 1.47
+    steering_speed: 0.7
+    range_thresh_max: 10.0
+    range_thresh_min: 3.0
     min_gap_size: 2.0
     goal_angle: 0.0
-    wall_follow_clearance_min: 1.0    
+    wall_follow_clearance_min: 2.0    
     wall_follow_clearance_max: 3.0
     min_speed: 2.0
     slow_speed: 3.0
-    max_speed: 5.0
+    max_speed: 7.0

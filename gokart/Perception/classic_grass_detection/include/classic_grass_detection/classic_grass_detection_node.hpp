@@ -65,19 +65,18 @@ public:
 
 private:
   // Subscriber
-  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_image_{};
+  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_cam_image_{};
 
   // Callback
   void onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg);
 
   // Data Buffer
-  sensor_msgs::msg::Image::ConstSharedPtr image_{};
+  sensor_msgs::msg::Image::ConstSharedPtr cam_image_{};
 
   // Publisher
-  //rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_image_{};
-  image_transport::Publisher pub_image_;
-  image_transport::Publisher pub_test_image_;
-  std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::LaserScan>> pub_grass_scan_;
+  image_transport::Publisher pub_cam_bev_;
+  image_transport::Publisher pub_track_bev_;
+  std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::LaserScan>> pub_track_scan_;
 
   // Parameter Server
   OnSetParametersCallbackHandle::SharedPtr set_param_res_;
