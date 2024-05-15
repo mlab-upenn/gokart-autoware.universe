@@ -85,17 +85,20 @@ public:
   */
 private:
   // Subscriber
-  rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr sub_scan_{};
+  rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr sub_track_scan_{};
+  rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr sub_lidar_scan_{};
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_cam_image_{};
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_track_bev_{};
 
   // Callback
-  void onScan(const sensor_msgs::msg::LaserScan::ConstSharedPtr msg);
+  void onTrackScan(const sensor_msgs::msg::LaserScan::ConstSharedPtr msg);
+  void onLidarScan(const sensor_msgs::msg::LaserScan::ConstSharedPtr msg);
   void onCamImage(const sensor_msgs::msg::Image::ConstSharedPtr msg);
   void onTrackBev(const sensor_msgs::msg::Image::ConstSharedPtr msg);
 
   // Data Buffer
-  sensor_msgs::msg::LaserScan::ConstSharedPtr scan_{};
+  sensor_msgs::msg::LaserScan::ConstSharedPtr track_scan_{};
+  sensor_msgs::msg::LaserScan::ConstSharedPtr lidar_scan_{};
   sensor_msgs::msg::Image::ConstSharedPtr cam_image_{};
   sensor_msgs::msg::Image::ConstSharedPtr track_bev_{};
 
@@ -111,13 +114,18 @@ private:
   rcl_interfaces::msg::SetParametersResult onSetParam(
     const std::vector<rclcpp::Parameter> & params);
 
-  void findGap(const sensor_msgs::msg::LaserScan::ConstSharedPtr scan_);
-  void findTargetGap(const sensor_msgs::msg::LaserScan::ConstSharedPtr scan_);
-  void calcSteerCmd(const sensor_msgs::msg::LaserScan::ConstSharedPtr scan_);
+  sensor_msgs::msg::LaserScan merge_scan(const sensor_msgs::msg::LaserScan scan_1,
+    const sensor_msgs::msg::LaserScan scan_2);
+  void findGap(const sensor_msgs::msg::LaserScan scan);
+  void findTargetGap(const sensor_msgs::msg::LaserScan scan);
+  void calcMotionCmd(const sensor_msgs::msg::LaserScan scan);
 
   // Parameter
   NodeParam node_param_{};
 
+  sensor_msgs::msg::LaserScan track_scan;
+  sensor_msgs::msg::LaserScan lidar_scan;
+  sensor_msgs::msg::LaserScan merged_scan;
   double range_thresh;
   std::vector<std::pair<int, int>> gap_indices;
   bool deadend;

@@ -80,8 +80,11 @@ SmartGapFollowNode::SmartGapFollowNode(const rclcpp::NodeOptions & node_options)
   // Subscriber
   rclcpp::QoS qos(rclcpp::KeepLast(1));
   qos.reliability(RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT);
-  sub_scan_ = create_subscription<sensor_msgs::msg::LaserScan>(
-    "~/input/scan", qos, std::bind(&SmartGapFollowNode::onScan, this, std::placeholders::_1));
+  sub_track_scan_ = create_subscription<sensor_msgs::msg::LaserScan>(
+    "~/input/track_scan", qos, std::bind(&SmartGapFollowNode::onTrackScan, this, std::placeholders::_1));
+
+  sub_lidar_scan_ = create_subscription<sensor_msgs::msg::LaserScan>(
+    "~/input/lidar_scan", qos, std::bind(&SmartGapFollowNode::onLidarScan, this, std::placeholders::_1));
 
   sub_cam_image_ = create_subscription<sensor_msgs::msg::Image>(
     "~/input/cam_image", rclcpp::QoS{1},
@@ -97,17 +100,17 @@ SmartGapFollowNode::SmartGapFollowNode(const rclcpp::NodeOptions & node_options)
   pub_planning_bev_ = image_transport::create_publisher(this, "~/out/planning_bev");
 }
 
-void SmartGapFollowNode::findGap(const sensor_msgs::msg::LaserScan::ConstSharedPtr scan_)
+void SmartGapFollowNode::findGap(const sensor_msgs::msg::LaserScan scan)
 {
   const float min_gap_size = node_param_.min_gap_size;
   //const double range_thresh_min = node_param_.range_thresh_min;
   const float range_thresh_max = node_param_.range_thresh_max;
   range_thresh = range_thresh_max;
-  const int scan_size = scan_->ranges.size();
-  const float angle_increment = scan_->angle_increment;
-  const float angle_min = scan_->angle_min;
-  const float angle_max = scan_->angle_max;
-  std::vector<float> scan_ranges = scan_->ranges;
+  const int scan_size = scan.ranges.size();
+  const float angle_increment = scan.angle_increment;
+  const float angle_min = scan.angle_min;
+  const float angle_max = scan.angle_max;
+  std::vector<float> scan_ranges = scan.ranges;
   std::vector<int> scan_ids(scan_size, 0);
   
   scan_ranges[0] = std::min(scan_ranges[0], 2 * min_gap_size);
@@ -242,11 +245,11 @@ void SmartGapFollowNode::findGap(const sensor_msgs::msg::LaserScan::ConstSharedP
   
 } 
 
-void SmartGapFollowNode::findTargetGap(const sensor_msgs::msg::LaserScan::ConstSharedPtr scan_)
+void SmartGapFollowNode::findTargetGap(const sensor_msgs::msg::LaserScan scan)
 {
-  const float angle_increment = scan_->angle_increment;
-  const float angle_min = scan_->angle_min;
-  //const float angle_max = scan_->angle_max;
+  const float angle_increment = scan.angle_increment;
+  const float angle_min = scan.angle_min;
+  //const float angle_max = scan.angle_max;
   const float goal_angle = node_param_.goal_angle;
   float min_angle_diff = INT_MAX;
   for(auto it:gap_indices){
@@ -259,22 +262,38 @@ void SmartGapFollowNode::findTargetGap(const sensor_msgs::msg::LaserScan::ConstS
   }
 }
 
-void SmartGapFollowNode::calcSteerCmd(const sensor_msgs::msg::LaserScan::ConstSharedPtr scan_)
+void SmartGapFollowNode::calcMotionCmd(const sensor_msgs::msg::LaserScan scan)
 {
-  const float angle_increment = scan_->angle_increment;
-  const float angle_min = scan_->angle_min;
-  const float wall_follow_clearance_min = node_param_.wall_follow_clearance_min;
-  const float car_width = node_param_.car_width;
-  //const float min_speed = node_param_.min_speed;
+  const float min_speed = node_param_.min_speed;
   //const float slow_speed = node_param_.slow_speed;
   const float max_speed = node_param_.max_speed;
-  float target_gap_angle_min = angle_min + target_gap_indices.first * angle_increment;
-  float target_gap_angle_max = angle_min + target_gap_indices.second * angle_increment;
+  const float angle_increment = scan.angle_increment;
+  const float angle_min = scan.angle_min;
+  const float wall_follow_clearance_min = node_param_.wall_follow_clearance_min;
+  const float car_width = node_param_.car_width;
+
+  float gap_angle_min = angle_min + target_gap_indices.first * angle_increment;
+  float gap_angle_max = angle_min + target_gap_indices.second * angle_increment;
+  float dist_to_gap = std::min(scan.ranges[target_gap_indices.first], 
+    scan.ranges[target_gap_indices.second]);
+  float gap_angle_min_x = scan.ranges[target_gap_indices.first] * sin(gap_angle_min);
+  float gap_angle_min_y = scan.ranges[target_gap_indices.first] * cos(gap_angle_min);
+  float gap_angle_max_x = scan.ranges[target_gap_indices.second] * sin(gap_angle_max);
+  float gap_angle_max_y = scan.ranges[target_gap_indices.second] * cos(gap_angle_max);
+  float gap_size = sqrt(pow(gap_angle_min_x - gap_angle_max_x, 2) + pow(gap_angle_min_y - gap_angle_max_y,2));
+  //float gap_angle = atan((gap_angle_min_y - gap_angle_max_y) / (gap_angle_min_x - gap_angle_max_x));
   
-  float steer_limit_min = target_gap_angle_min + 
-    atan((car_width / 2 + wall_follow_clearance_min) / scan_->ranges[target_gap_indices.first]);
-  float steer_limit_max = target_gap_angle_max - 
-    atan((car_width / 2 + wall_follow_clearance_min) / scan_->ranges[target_gap_indices.second]);
+  RCLCPP_INFO_STREAM(get_logger(), "dist_to_gap: "<<dist_to_gap<< " m");
+  RCLCPP_INFO_STREAM(get_logger(), "gap_size: "<<gap_size<<" m");
+  //RCLCPP_INFO_STREAM(get_logger(), "gap angle:"<<gap_angle * 180 / M_PI);
+  //RCLCPP_INFO_STREAM(get_logger(), "gap_angle_min_x:"<<gap_angle_min_x <<" gap_angle_min_y:"<<gap_angle_min_y);
+  //RCLCPP_INFO_STREAM(get_logger(), "gap_angle_max_x:"<<gap_angle_max_x <<" gap_angle_max_y:"<<gap_angle_max_y);
+
+  float steer_limit_min = gap_angle_min + 
+    atan((car_width / 2 + wall_follow_clearance_min) / scan.ranges[target_gap_indices.first]);
+  float steer_limit_max = gap_angle_max - 
+    atan((car_width / 2 + wall_follow_clearance_min) / scan.ranges[target_gap_indices.second]);
+  
 
   /*
   steer_limit_min = std::min(float(40.0 * M_PI / 180), steer_limit_min);
@@ -291,31 +310,75 @@ void SmartGapFollowNode::calcSteerCmd(const sensor_msgs::msg::LaserScan::ConstSh
   }else if(steer_limit_max > steer_limit_min){
     steer_angle = (steer_limit_min + steer_limit_max) / 2;
   }else{
-    if(scan_->ranges[target_gap_indices.first] > scan_->ranges[target_gap_indices.second])
+    if(scan.ranges[target_gap_indices.first] > scan.ranges[target_gap_indices.second])
       steer_angle = steer_limit_max;
     else
       steer_angle = steer_limit_min;
   }
-  steer_angle *= 0.5;
+  if(abs(steer_angle) < 10)
+    steer_angle *= 0.35;
 
-  RCLCPP_INFO_STREAM(get_logger(), "steer_limits:["<<steer_limit_min * 180 / M_PI <<", "<<
-    steer_limit_max * 180 / M_PI <<"]");
-  RCLCPP_INFO_STREAM(get_logger(), "steer_angle: "<<steer_angle * 180 / M_PI);
+  if(abs(steer_angle) >= 10)
+    steer_angle *= 0.7;
+
+  float target_speed = max_speed * (1 - abs(steer_angle * 180 / M_PI) / 30);// * pow(std::min((float)1.0, dist_to_gap / 12), 1.5);
+  if(gap_size < 4.0)
+    target_speed = min_speed;
+  RCLCPP_INFO_STREAM(get_logger(), "target_speed: "<<target_speed << " m/s");
+  //RCLCPP_INFO_STREAM(get_logger(), "steer_limits:["<<steer_limit_min * 180 / M_PI <<", "<<
+  //  steer_limit_max * 180 / M_PI <<"]");
+  RCLCPP_INFO_STREAM(get_logger(), "steer_angle: "<<steer_angle * 180 / M_PI << " deg");
 
   ackermann_msgs::msg::AckermannDriveStamped ackermann_msg;
-  ackermann_msg.drive.speed = max_speed;
+  ackermann_msg.drive.speed = target_speed;
   ackermann_msg.drive.steering_angle = steer_angle;
   ackermann_msg.drive.steering_angle_velocity = 1.0;
   ackermann_msg.drive.acceleration = 2.0;
   pub_drive_->publish(ackermann_msg);  
 }
 
-void SmartGapFollowNode::onScan(const sensor_msgs::msg::LaserScan::ConstSharedPtr scan_)
+sensor_msgs::msg::LaserScan SmartGapFollowNode::merge_scan(const sensor_msgs::msg::LaserScan scan_1,
+  const sensor_msgs::msg::LaserScan scan_2)
 {
-  findGap(scan_);
-  findTargetGap(scan_);
-  calcSteerCmd(scan_);
+  if(scan_1.ranges.size() != scan_2.ranges.size()){
+    RCLCPP_INFO_STREAM(get_logger(), "merge scan error");
+    return scan_1;
+  }
+  sensor_msgs::msg::LaserScan merged_scan;
+  merged_scan.angle_increment = scan_1.angle_increment;
+  merged_scan.angle_min = scan_1.angle_min;
+  merged_scan.angle_max = scan_1.angle_max;
+  merged_scan.range_min = scan_1.range_min;
+  merged_scan.range_max = scan_1.range_max;
+  merged_scan.ranges = scan_1.ranges;
+  for(int i = 0; i < (int)scan_1.ranges.size(); i++)
+    merged_scan.ranges[i] = scan_1.ranges[i] < scan_2.ranges[i] ? scan_1.ranges[i] : scan_2.ranges[i];
+  return merged_scan;
+}
+
+void SmartGapFollowNode::onTrackScan(const sensor_msgs::msg::LaserScan::ConstSharedPtr track_scan_)
+{
+  track_scan.angle_increment = track_scan_->angle_increment;
+  track_scan.angle_min = track_scan_->angle_min;
+  track_scan.angle_max = track_scan_->angle_max;
+  track_scan.range_min = track_scan_->range_min;
+  track_scan.range_max = track_scan_->range_max;
+  track_scan.ranges = track_scan_->ranges;
+  merged_scan = merge_scan(track_scan, lidar_scan);
+  findGap(merged_scan);
+  findTargetGap(merged_scan);
+  calcMotionCmd(merged_scan);
   //RCLCPP_INFO_STREAM(get_logger(), "gap");
+}
+
+void SmartGapFollowNode::onLidarScan(const sensor_msgs::msg::LaserScan::ConstSharedPtr lidar_scan_)
+{
+  lidar_scan.angle_increment = lidar_scan_->angle_increment;
+  lidar_scan.angle_min = lidar_scan_->angle_min;
+  lidar_scan.angle_max = lidar_scan_->angle_max;
+  lidar_scan.range_min = lidar_scan_->range_min;
+  lidar_scan.range_max = lidar_scan_->range_max;
+  lidar_scan.ranges = lidar_scan_->ranges;
 }
 
 void SmartGapFollowNode::onCamImage(const sensor_msgs::msg::Image::ConstSharedPtr cam_image_)
@@ -329,7 +392,7 @@ void SmartGapFollowNode::onCamImage(const sensor_msgs::msg::Image::ConstSharedPt
   pub_planning_cam_msg.image = cam_image;
   pub_planning_cam_msg.encoding = sensor_msgs::image_encodings::BGR8; //BGR8;
   pub_planning_cam_.publish(pub_planning_cam_msg.toImageMsg());
-  RCLCPP_INFO_STREAM(get_logger(), "cam image");
+  RCLCPP_INFO_STREAM(get_logger(), " ");
 }
 
 void SmartGapFollowNode::onTrackBev(const sensor_msgs::msg::Image::ConstSharedPtr track_bev_)
@@ -342,7 +405,7 @@ void SmartGapFollowNode::onTrackBev(const sensor_msgs::msg::Image::ConstSharedPt
   pub_planning_bev_msg.image = track_bev;
   pub_planning_bev_msg.encoding = sensor_msgs::image_encodings::MONO8; //BGR8;
   pub_planning_bev_.publish(pub_planning_bev_msg.toImageMsg());
-  RCLCPP_INFO_STREAM(get_logger(), "track_bev");
+  RCLCPP_INFO_STREAM(get_logger(), " ");
 }
 
 rcl_interfaces::msg::SetParametersResult SmartGapFollowNode::onSetParam(

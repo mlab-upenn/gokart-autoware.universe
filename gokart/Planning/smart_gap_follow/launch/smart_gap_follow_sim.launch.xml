@@ -6,7 +6,8 @@
   <!-- Node -->
   <node pkg="smart_gap_follow" exec="smart_gap_follow_node" name="smart_gap_follow" output="screen">
     <remap from="~/input/cam_image" to="/kart/camera"/>
-    <remap from="~/input/scan" to="/classic_grass_detection/out/track_scan"/>
+    <remap from="~/input/track_scan" to="/classic_grass_detection/out/track_scan"/>
+    <remap from="~/input/lidar_scan" to="/scanner/lidar_scan"/>
     <remap from="~/input/track_bev" to="/classic_grass_detection/out/track_bev"/>
     <remap from="~/out/drive" to="/kart/ackermann_cmd"/>
     <remap from="~/output/image" to="$(var output/image)"/>
