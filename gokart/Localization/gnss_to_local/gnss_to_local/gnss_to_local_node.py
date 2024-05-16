@@ -26,12 +26,15 @@ class Python_node(Node):
                 ('projection_lon_span', 0.0016),
                 ('debug_mode', False),
                 ('set_origin', False),
-                # ('map_ori_path', "/home/autoware/gokart_ws/src/gokart-sensor/configs/pennovation/map_ori.csv")
-                ('map_ori_path', "/home/autoware/gokart_ws/src/gokart-sensor/configs/pennovation_lotA/map_ori.csv")
+                ('map_ori_path', "/home/autoware/gokart_ws/src/gokart-sensor/configs/pennovation/map_ori.csv")
+                # ('map_ori_path', "/home/autoware/gokart_ws/src/gokart-sensor/configs/pennovation_lotA/map_ori.csv")
             ])
 
         # subscribe and publish
-        self.gnss_sub = self.create_subscription(NavSatFix, "/navsatfix/use", self.gnss_cb, qos_profile=qos_profile_sensor_data)
+        # self.gnss_sub = self.create_subscription(NavSatFix, "/navsatfix/use", self.gnss_cb, qos_profile=qos_profile_sensor_data)
+        
+        # fixposition
+        self.gnss_sub = self.create_subscription(NavSatFix, "/fixposition/navsatfix", self.gnss_cb, qos_profile=qos_profile_sensor_data)
         self.position_pub = self.create_publisher(PoseWithCovarianceStamped, "/gnss_local", 10)
 
         # init local frame
@@ -39,7 +42,7 @@ class Python_node(Node):
         # |
         # |
         #  ------>x, East, lon
-        self.get_logger().info("gnss_to_local node initialized")
+        self.get_logger().info("gnss_to_local node initialized with fix position")
         # self.ori = Point(39.9411, -75.2001, 0, 0) # bottom left
         # self.diag = Point(39.9421, -75.1985, 0, 0) # top right
 

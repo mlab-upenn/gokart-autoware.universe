@@ -150,7 +150,7 @@ class PurePursuit_node(Node):
         pub_target_point.y = target_global[1]
         self.target_pub.publish(pub_target_point)
         target_v = v_array[i_interp]
-        speed = target_v * self.vel_scale * 2.0
+        speed = target_v * self.vel_scale * 3.15
 
         R = np.array([[np.cos(curr_yaw), np.sin(curr_yaw)],
                       [-np.sin(curr_yaw), np.cos(curr_yaw)]])
