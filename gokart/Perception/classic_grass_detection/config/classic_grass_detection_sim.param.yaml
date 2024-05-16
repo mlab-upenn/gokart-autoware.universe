@@ -1,0 +1,28 @@
+/**:
+  ros__parameters:
+    bev_width: 500
+    bev_height: 700
+    bev_origin: [250, 699]
+    px_dist: 0.04
+    grass_b_weight: 1.0
+    grass_g_weight: 1.0
+    cone_b_weight: 1.0
+    cone_r_weight: 1.0
+    grass_thres: 20
+    cone_thres: 60
+    cone_base_ratio: 0.15
+    img_bot_left: [422, 735]
+    img_top_left: [822, 593]
+    img_top_right: [1098, 593]
+    img_bot_right: [1498, 735]
+    world_bot_left: [-2.5, 3.0]
+    world_top_left: [-2.5, 12.0]
+    world_top_right: [2.5, 12.0]
+    world_bot_right: [2.5, 3.0]
+    scan_angle_increment: 0.00872664625
+    scan_angle_min: -1.5708
+    scan_angle_max: 1.5708
+    scan_range_min: 0.1
+    scan_range_max: 50.0
+    ray_step_size: 1
+    
