@@ -86,7 +86,7 @@ ClassicGrassDetectionNode::ClassicGrassDetectionNode(const rclcpp::NodeOptions &
   node_param_.ray_step_size = declare_parameter<int>("ray_step_size");
 
   timer_ = this->create_wall_timer(std::chrono::milliseconds(16), 
-    std::bind(&ClassicGrassDetectionNode::camImageDriver, this));
+    std::bind(&ClassicGrassDetectionNode::cameraDriver, this));
 
   // Subscriber
   sub_cam_image_ = create_subscription<sensor_msgs::msg::Image>(
@@ -103,7 +103,7 @@ ClassicGrassDetectionNode::ClassicGrassDetectionNode(const rclcpp::NodeOptions &
   cap = cv::VideoCapture(node_param_.cam_id);
 }
 
-void ClassicGrassDetectionNode::camImageDriver()
+void ClassicGrassDetectionNode::cameraDriver()
 {
   if(node_param_.simulation)
     return;
