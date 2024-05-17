@@ -75,9 +75,6 @@ private:
 
   // Data Buffer
   sensor_msgs::msg::Image::ConstSharedPtr cam_image_{};
-  rclcpp::TimerBase::SharedPtr timer_;
-
-  void cameraDriver();
 
   // Publisher
   image_transport::Publisher pub_cam_;

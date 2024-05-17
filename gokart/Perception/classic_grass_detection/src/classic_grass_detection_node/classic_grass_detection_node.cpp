@@ -57,8 +57,6 @@ ClassicGrassDetectionNode::ClassicGrassDetectionNode(const rclcpp::NodeOptions &
     std::bind(&ClassicGrassDetectionNode::onSetParam, this, std::placeholders::_1));
 
   // Node Parameter
-  node_param_.simulation = declare_parameter<bool>("simulation");
-  node_param_.cam_id = declare_parameter<int>("cam_id");
   node_param_.bev_width = declare_parameter<int>("bev_width");
   node_param_.bev_height = declare_parameter<int>("bev_height");
   node_param_.bev_origin = declare_parameter<std::vector<int64_t>>("bev_origin");
@@ -85,35 +83,16 @@ ClassicGrassDetectionNode::ClassicGrassDetectionNode(const rclcpp::NodeOptions &
   node_param_.scan_range_max = declare_parameter<double>("scan_range_max");
   node_param_.ray_step_size = declare_parameter<int>("ray_step_size");
 
-  timer_ = this->create_wall_timer(std::chrono::milliseconds(16), 
-    std::bind(&ClassicGrassDetectionNode::cameraDriver, this));
-
   // Subscriber
   sub_cam_image_ = create_subscription<sensor_msgs::msg::Image>(
     "~/input/image", rclcpp::QoS{1},
     std::bind(&ClassicGrassDetectionNode::onImage, this, std::placeholders::_1));
 
   // Publisher
-  pub_cam_ = image_transport::create_publisher(this, "~/out/cam");
   pub_cam_bev_ = image_transport::create_publisher(this, "~/out/cam_bev");
   pub_track_bev_ = image_transport::create_publisher(this, "~/out/track_bev");
   pub_track_scan_ = this->create_publisher<sensor_msgs::msg::LaserScan>(
     "~/out/track_scan", rclcpp::SensorDataQoS());
-
-  cap = cv::VideoCapture(node_param_.cam_id);
-}
-
-void ClassicGrassDetectionNode::cameraDriver()
-{
-  if(node_param_.simulation)
-    return;
-
-  cv::Mat frame;
-  cap.read(frame);
-  if (!frame.empty()) {
-      auto msg = cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", frame).toImageMsg();
-      pub_cam_.publish(*msg);
-  }
 }
 
 void ClassicGrassDetectionNode::onImage(const sensor_msgs::msg::Image::ConstSharedPtr image_)
