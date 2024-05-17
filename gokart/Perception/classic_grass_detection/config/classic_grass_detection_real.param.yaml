@@ -1,6 +1,6 @@
 /**:
   ros__parameters:
-    simulation: true
+    simulation: false
     cam_id: 2
     bev_width: 500
     bev_height: 700

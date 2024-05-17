@@ -1,7 +1,7 @@
 <launch>
   <arg name="input/image" default="~/input/image"/>
   <arg name="output/image" default="~/output/image"/>
-  <arg name="param_path" default="$(find-pkg-share classic_grass_detection)/config/classic_grass_detection.param.yaml"/>
+  <arg name="param_path" default="$(find-pkg-share classic_grass_detection)/config/classic_grass_detection_real.param.yaml"/>
 
   <!-- Node -->
   <node pkg="classic_grass_detection" exec="classic_grass_detection_node" name="classic_grass_detection" output="screen">

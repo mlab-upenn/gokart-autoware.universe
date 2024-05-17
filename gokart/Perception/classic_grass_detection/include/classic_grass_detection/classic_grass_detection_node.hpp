@@ -16,11 +16,12 @@
 
 #include "sensor_msgs/msg/image.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
-#include <image_transport/image_transport.hpp>
-#include <image_transport/subscriber_filter.hpp>
+#include "image_transport/image_transport.hpp"
+#include "image_transport/subscriber_filter.hpp"
 #include "opencv2/core.hpp"
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
+#include "opencv2/videoio.hpp"
 #include <chrono>
 #include <memory>
 #include <string>
@@ -36,6 +37,8 @@ public:
 
   struct NodeParam
   {
+    bool simulation{};
+    int cam_id{};
     int bev_width{};
     int bev_height{};
     std::vector<int64_t> bev_origin{};
@@ -72,8 +75,12 @@ private:
 
   // Data Buffer
   sensor_msgs::msg::Image::ConstSharedPtr cam_image_{};
+  rclcpp::TimerBase::SharedPtr timer_;
+
+  void camImageDriver();
 
   // Publisher
+  image_transport::Publisher pub_cam_;
   image_transport::Publisher pub_cam_bev_;
   image_transport::Publisher pub_track_bev_;
   std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::LaserScan>> pub_track_scan_;
@@ -85,6 +92,8 @@ private:
 
   // Parameter
   NodeParam node_param_{};
+
+  cv::VideoCapture cap;
 };
 
 }  // namespace classic_grass_detection
