@@ -35,8 +35,10 @@ class Wp_record_node(Node):
                                                  self.pose_cb,
                                                  10)
         self.timer = self.create_timer(self.dt, self.record_wp)
+        self.get_logger().info(self.get_parameter('config_path').value)
         self.wp_path = os.path.join(self.get_parameter('config_path').value, self.get_parameter('wp_filename').value)
         self.get_logger().info("wp_record_node save wp to {}".format(self.wp_path))
+        self.get_logger().info("wp_record_node initialized, frequency: {}".format(self.freq))
 
         self.x = 0.0
         self.y = 0.0

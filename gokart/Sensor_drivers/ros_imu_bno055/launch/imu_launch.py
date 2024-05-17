@@ -7,11 +7,11 @@ import yaml
 
 ###### get config folder path from global config file #####
 cwd = os.getcwd()
-global_cfg_path = os.path.join(cwd, "src", "gokart-sensor", "configs", "global_config.yaml")
+global_cfg_path = os.path.join(cwd, "src", "universe", "autoware.universe", "gokart", "configs", "global_config.yaml")
 with open(global_cfg_path, 'r') as f:
     global_cfg = yaml.load(f, Loader=yaml.FullLoader)
 LOCATION = global_cfg["location"]
-config_folder = os.path.join(cwd, "src", "gokart-sensor", "configs", LOCATION)
+config_folder = os.path.join(cwd, "src", "universe", "autoware.universe", "gokart", "configs", LOCATION)
 ###### get config folder path from global config file #####
 
 

@@ -6,7 +6,7 @@ import yaml
 # from ament_index_python.packages import get_package_share_directory
 
 cwd = os.getcwd()
-global_cfg_path = os.path.join(cwd, "src", "gokart-sensor", "configs", "global_config.yaml")
+global_cfg_path = os.path.join(cwd, "src", "universe", "autoware.universe", "gokart", "configs", "global_config.yaml")
 with open(global_cfg_path, 'r') as f:
     global_cfg = yaml.load(f, Loader=yaml.FullLoader)
 LOCATION = global_cfg["location"]
@@ -27,12 +27,12 @@ def generate_launch_description():
     else:
         FILENAME = 'gnss_waypoints_purepursuit_original.yaml'
 
-    config = os.path.join(cwd, "src", "gokart-sensor", "configs", LOCATION, FILENAME)
+    config = os.path.join(cwd, "src", "universe", "autoware.universe", "gokart", "configs", LOCATION, FILENAME)
     print(f"load config from {config}")
 
     purepursuit_node = Node(
         package="kart_pure_pursuit",
-        executable="purepursuit_node",
+        executable="kart_purepursuit_node",
         output="screen",
         parameters=[config],
     )
