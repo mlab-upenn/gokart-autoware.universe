@@ -12,7 +12,7 @@ from ekf_gnss.ekf import EKF
 import numpy as np
 import threading
 import transforms3d
-from tf_transformations import quaternion_matrix, quaternion_from_matrix, quaternion_multiply, quaternion_inverse
+from tf_transformations import quaternion_matrix, quaternion_from_matrix, quaternion_multiply, quaternion_inverse, quaternion_from_euler
 
 
 X = namedtuple('X', ['sec', 'nanosec', 'x', 'y', 'yaw', 'v','omega'])
@@ -31,8 +31,15 @@ class Ekf_gnss_node(Node):
             namespace='',
             parameters=[
                 ('frequency', 20),
+                ('origin_latitude', 39.9416),
+                ('origin_longitude', -75.1993),
+                ('origin_altitude', -27.19),
             ])
         self.freq = self.get_parameter('frequency').get_parameter_value().integer_value
+        self.origin_lat = self.get_parameter('origin_latitude').get_parameter_value().double_value
+        self.origin_lon = self.get_parameter('origin_longitude').get_parameter_value().double_value
+        self.origin_alt = self.get_parameter('origin_altitude').get_parameter_value().double_value
+
         self.dt = 1/self.freq
         
         self.ekf = EKF()
@@ -121,29 +128,33 @@ class Ekf_gnss_node(Node):
         # Convert rotation matrix to quaternion
         rotation_quaternion = quaternion_from_matrix(rotation_matrix_4x4)
 
-        # apply the rotation to the orientation quaternion
-        rotated_quaternion = quaternion_multiply(rotation_quaternion, [orientation.w, orientation.x, orientation.y, orientation.z])
+        
 
-        print("rotated_quaternion: ", rotated_quaternion)
+        # apply the rotation to the orientation quaternion
+        rotated_quaternion = quaternion_multiply(rotation_quaternion, [orientation.x, orientation.y, orientation.z, orientation.w])
+
+        # rotated_quaternion = self.project_to_2d(rotated_quaternion)
+        # rotation_quaternion_2d = quaternion_from_euler(0, 0, 1)
+        # rotated_quaternion_2d = quaternion_multiply(rotation_quaternion_2d, rotated_quaternion)
+
+        # print("original_quaternion: ", [orientation.w, orientation.x, orientation.y, orientation.z])
+        # print("rotated_quaternion: ", rotated_quaternion)
         return rotated_quaternion
+    
+    def project_to_2d(self, quaternion):
+        z = quaternion[3]
+        w = np.sqrt(1 - z**2)
+        return np.array([w, 0, 0, z])
 
     
     def odom_cb(self, msg: Odometry):
-        # set the current orientation from the odometry data
-        # q = msg.pose.pose.orientation
-        # q = np.array([q.w, q.x, q.y, q.z])
-        # self.q = q
-        origin_lat = 39.9416
-        origin_lon = -75.1993
-        origin_alt = -27.19
-
         # Extract ECEF coordinates from odometry message
         ecef_x = msg.pose.pose.position.x
         ecef_y = msg.pose.pose.position.y
         ecef_z = msg.pose.pose.position.z
 
         # Convert ECEF to local ENU coordinates
-        local_x, local_y, local_z, rotation_matrix = self.ecef_to_enu(ecef_x, ecef_y, ecef_z, origin_lat, origin_lon, origin_alt)
+        local_x, local_y, local_z, rotation_matrix = self.ecef_to_enu(ecef_x, ecef_y, ecef_z, self.origin_lat, self.origin_lon, self.origin_alt)
         local_orientation = self.rotate_orientation(msg.pose.pose.orientation, rotation_matrix)
 
 
@@ -169,10 +180,10 @@ class Ekf_gnss_node(Node):
         pose_cov_msg.pose.pose.position.x = local_x
         pose_cov_msg.pose.pose.position.y = local_y
         pose_cov_msg.pose.pose.position.z = local_z
-        pose_cov_msg.pose.pose.orientation.x = local_orientation[1]
-        pose_cov_msg.pose.pose.orientation.y = local_orientation[2]
-        pose_cov_msg.pose.pose.orientation.z = local_orientation[3]
-        pose_cov_msg.pose.pose.orientation.w = local_orientation[0]
+        pose_cov_msg.pose.pose.orientation.x = local_orientation[0]
+        pose_cov_msg.pose.pose.orientation.y = local_orientation[1]
+        pose_cov_msg.pose.pose.orientation.z = local_orientation[2]
+        pose_cov_msg.pose.pose.orientation.w = local_orientation[3]
         # pose_cov_msg.pose.pose.orientation = msg.pose.pose.orientation
 
         # Set the covariance

@@ -7,6 +7,12 @@ gnss_to_local_node:
     projection_lat_span: 0.001
     projection_lon_span: 0.0016
     set_origin: false
+ekf_gnss_node:
+  ros__parameters:
+    frequency: 50
+    origin_latitude: 39.9416
+    origin_longitude: -75.1993
+    origin_altitude: 27.19
 purepursuit_node:
   ros__parameters:
     D: 1.0

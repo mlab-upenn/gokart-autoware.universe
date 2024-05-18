@@ -1,6 +1,9 @@
 ekf_gnss_node:
   ros__parameters:
     frequency: 50
+    origin_latitude: 39.9416
+    origin_longitude: -75.1993
+    origin_altitude: 27.19
 gnss_to_local_node:
   ros__parameters:
     debug_mode: true

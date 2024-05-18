@@ -120,6 +120,7 @@ class PurePursuit_node(Node):
         curr_quat = pose_msg.pose.pose.orientation
         curr_yaw = math.atan2(2 * (curr_quat.w * curr_quat.z + curr_quat.x * curr_quat.y),
                               1 - 2 * (curr_quat.y ** 2 + curr_quat.z ** 2))
+        self.get_logger().info("current orientation (degree): {}".format(curr_yaw * 180 / np.pi))
 
         curr_pos_idx = np.argmin(np.linalg.norm(self.lane[0][:, :2] - curr_pos, axis=1))
         curr_lane_nearest_idx = np.argmin(np.linalg.norm(self.lane[self.last_lane][:, :2] - curr_pos, axis=1))
@@ -150,7 +151,7 @@ class PurePursuit_node(Node):
         pub_target_point.y = target_global[1]
         self.target_pub.publish(pub_target_point)
         target_v = v_array[i_interp]
-        speed = target_v * self.vel_scale * 3.15
+        speed = target_v * self.vel_scale * 2
 
         R = np.array([[np.cos(curr_yaw), np.sin(curr_yaw)],
                       [-np.sin(curr_yaw), np.cos(curr_yaw)]])
@@ -162,10 +163,11 @@ class PurePursuit_node(Node):
         L = np.linalg.norm(curr_pos - target_global)
         gamma = 2 / L ** 2
         error = gamma * target_local_y
-        if(segment_end in self.corner_idx):
-            steer = self.get_steer_w_speed(cur_speed, error, corner=True)
-        else:
-            steer = self.get_steer_w_speed(cur_speed, error)
+        # if(segment_end in self.corner_idx):
+        #     steer = self.get_steer_w_speed(cur_speed, error, corner=True)
+        # else:
+        #     steer = self.get_steer_w_speed(cur_speed, error)
+        steer = self.get_steer_w_speed(cur_speed, error)
         
         message = AckermannDriveStamped()
         message.drive.speed = speed
