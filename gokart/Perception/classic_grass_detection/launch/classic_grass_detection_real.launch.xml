@@ -5,7 +5,7 @@
 
   <!-- Node -->
   <node pkg="classic_grass_detection" exec="classic_grass_detection_node" name="classic_grass_detection" output="screen">
-    <remap from="~/input/image" to="$(var input/image)"/>
+    <remap from="~/input/image" to="/camera1/image_raw"/>
     <remap from="~/output/image" to="$(var output/image)"/>
     <param from="$(var param_path)"/>
   </node>

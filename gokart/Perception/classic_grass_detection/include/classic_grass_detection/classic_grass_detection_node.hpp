@@ -37,7 +37,6 @@ public:
 
   struct NodeParam
   {
-    bool simulation{};
     int cam_id{};
     int bev_width{};
     int bev_height{};

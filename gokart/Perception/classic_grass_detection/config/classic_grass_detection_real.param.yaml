@@ -11,14 +11,14 @@
     grass_thres: 20
     cone_thres: 60
     cone_base_ratio: 0.15
-    img_bot_left: [422, 735]
-    img_top_left: [822, 593]
-    img_top_right: [1098, 593]
-    img_bot_right: [1498, 735]
-    world_bot_left: [-2.5, 3.0]
-    world_top_left: [-2.5, 12.0]
-    world_top_right: [2.5, 12.0]
-    world_bot_right: [2.5, 3.0]
+    img_bot_left: [58, 702]
+    img_top_left: [712, 493]
+    img_top_right: [1092, 493]
+    img_bot_right: [1666, 702]
+    world_bot_left: [-2.6, 3.048]
+    world_top_left: [-2.6, 12.192]
+    world_top_right: [2.4, 12.192]
+    world_bot_right: [2.4, 3.048]
     scan_angle_increment: 0.00872664625
     scan_angle_min: -1.5708
     scan_angle_max: 1.5708

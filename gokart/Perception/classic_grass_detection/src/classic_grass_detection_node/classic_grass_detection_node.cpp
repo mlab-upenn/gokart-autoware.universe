@@ -192,27 +192,37 @@ void ClassicGrassDetectionNode::onImage(const sensor_msgs::msg::Image::ConstShar
   //fill hole and remove noise
   cv::morphologyEx(grass_mask, grass_mask, cv::MORPH_OPEN, kernel);
   cv::morphologyEx(grass_mask, grass_mask, cv::MORPH_CLOSE, kernel);
-  cv::rectangle(grass_mask, cv::Point(490, 960), cv::Point(1437, 1079), 0, -1, cv::LINE_8);
+  cv::rectangle(grass_mask, cv::Point(464, 938), cv::Point(1408, 1079), 0, -1, cv::LINE_8);
+  cv::rectangle(grass_mask, cv::Point(648, 830), cv::Point(1186, 1079), 0, -1, cv::LINE_8);
 
   //bev projection
   cv::Mat bev, bev_grass;
   cv::warpPerspective(img, bev, mat, bev_size, cv::INTER_LINEAR);
   cv::warpPerspective(grass_mask, bev_grass, mat, bev_size, cv::INTER_LINEAR); 
 
+  cv::Mat bev_fov_gray, bev_fov_mask, bev_fov_edges;
+  cv::cvtColor(bev, bev_fov_gray, cv::COLOR_BGRA2GRAY);
+  cv::threshold(bev_fov_gray, bev_fov_mask, 1, 255, cv::THRESH_BINARY);
+  cv::Canny(bev_fov_mask, bev_fov_edges, 10, 60, 3);
+  kernel = getStructuringElement(cv::MORPH_RECT, cv::Size(10, 10));
+  cv::dilate(bev_fov_edges, bev_fov_edges, kernel, cv::Point(-1, -1), 1);
+
   //bev to lidar_scan
   const int num_data = int((scan_angle_max - scan_angle_min) / scan_angle_increment) + 1;
-  std::vector<float> scan_data(num_data, 1000);
+  const int init_dist = 1000;
+  std::vector<float> scan_data(num_data, init_dist);
   for(int i = 0; i < num_data; i++){
     int ray_dist_px = int(scan_range_min * px_dist);
     float ray_angle = 90 * M_PI / 180 - scan_angle_max + i * scan_angle_increment;
     while(ray_dist_px * px_dist <= scan_range_max){
-      int x = int(bev_origin[0] + ray_dist_px * cos(ray_angle));
-      int y = int(bev_origin[1] - ray_dist_px * sin(ray_angle));
+      const int x = int(bev_origin[0] + ray_dist_px * cos(ray_angle));
+      const int y = int(bev_origin[1] - ray_dist_px * sin(ray_angle));
       
       if(x >= bev_size.width || x < 0 || y >= bev_size.height || y < 0)
         break;
-      if((int) bev_grass.at<uchar>(y,x) > 100){
-        scan_data[i] = ray_dist_px * px_dist;
+      if((int)bev_grass.at<uchar>(y,x) > 100){
+        if((int)bev_fov_edges.at<uchar>(y,x) == 0)
+          scan_data[i] = ray_dist_px * px_dist;
         break;
       }
       ray_dist_px += ray_step_size;
