@@ -33,10 +33,14 @@ def generate_yaml(config_folder, global_cfg_path):
     # wpcollection_yaml_path = os.path.join(config_folder, 'pennovation', WPCOLLECTION_YAML_NAME)
     # gapfollow_yaml_path = os.path.join(config_folder,'pennovation', GAPFOLLOW_YAML_NAME)
     # purepursuit_yaml_optim_path = os.path.join(config_folder, 'pennovation', PUREPURSUIT_YAML_OPTIM_NAME)
-    purepursuit_yaml_path = os.path.join(config_folder, 'pennovation_lotA', PUREPURSUIT_YAML_NAME)
-    wpcollection_yaml_path = os.path.join(config_folder, 'pennovation_lotA', WPCOLLECTION_YAML_NAME)
-    gapfollow_yaml_path = os.path.join(config_folder,'pennovation_lotA', GAPFOLLOW_YAML_NAME)
-    purepursuit_yaml_optim_path = os.path.join(config_folder, 'pennovation_lotA', PUREPURSUIT_YAML_OPTIM_NAME)
+    # purepursuit_yaml_path = os.path.join(config_folder, 'pennovation_lotA', PUREPURSUIT_YAML_NAME)
+    # wpcollection_yaml_path = os.path.join(config_folder, 'pennovation_lotA', WPCOLLECTION_YAML_NAME)
+    # gapfollow_yaml_path = os.path.join(config_folder,'pennovation_lotA', GAPFOLLOW_YAML_NAME)
+    # purepursuit_yaml_optim_path = os.path.join(config_folder, 'pennovation_lotA', PUREPURSUIT_YAML_OPTIM_NAME)
+    purepursuit_yaml_path = os.path.join(config_folder, 'purdue_2024', PUREPURSUIT_YAML_NAME)
+    wpcollection_yaml_path = os.path.join(config_folder, 'purdue_2024', WPCOLLECTION_YAML_NAME)
+    gapfollow_yaml_path = os.path.join(config_folder,'purdue_2024', GAPFOLLOW_YAML_NAME)
+    purepursuit_yaml_optim_path = os.path.join(config_folder, 'purdue_2024', PUREPURSUIT_YAML_OPTIM_NAME)
     
     with open(global_cfg_path, 'r') as f:
         global_cfg = yaml.load(f, Loader=yaml.FullLoader)
@@ -94,7 +98,7 @@ def generate_yaml(config_folder, global_cfg_path):
 
 if __name__ == "__main__":
     cwd = os.getcwd()
-    global_cfg_path = os.path.join(cwd, "src", "gokart-sensor", "configs", "global_config.yaml")
-    config_folder = os.path.join(cwd, 'src', 'gokart-sensor', 'configs')
+    global_cfg_path = os.path.join(cwd, "configs", "global_config.yaml")
+    config_folder = os.path.join(cwd, 'configs')
     print(f'current config path for all the yaml files: {config_folder}')
     generate_yaml(config_folder, global_cfg_path)

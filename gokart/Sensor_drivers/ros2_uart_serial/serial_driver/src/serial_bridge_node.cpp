@@ -249,7 +249,7 @@ void SerialBridgeNode::receive_callback(
       std::cerr << e.what() << '\n';
     }
     
-    // RCLCPP_INFO(get_logger(), "speed got");
+    // RCLCPP_INFO(get_logger()drive_ackermann, "speed got");
 
     if(drive_ackermann[5] == "info"){
       drive_info_publisher->publish(ackermann_msg);
@@ -274,6 +274,7 @@ void SerialBridgeNode::receive_callback(
 // subscribe to ros topic /drive_command_to_nucleo and send its command to nucleo
 void SerialBridgeNode::drive_cmd_callback(const ackermann_msgs::msg::AckermannDriveStamped::SharedPtr msg){
   // send steering command to degrees
+  //RCLCPP_INFO(get_logger(),",Calling drive cmd callback func");
   float steering_angle = msg -> drive.steering_angle * 180.0 / M_PI;
   float speed = msg -> drive.speed;
 
@@ -290,6 +291,7 @@ void SerialBridgeNode::drive_cmd_callback(const ackermann_msgs::msg::AckermannDr
     string s_speed = stream2.str().substr(0, 6);
 
     string drive_command = "steer " + s_steer + " speed " + s_speed;
+  RCLCPP_INFO(get_logger(),drive_command.c_str());
     std::vector<uint8_t> out(drive_command.begin(), drive_command.end());
 
     m_serial_driver->port()->async_send(out);

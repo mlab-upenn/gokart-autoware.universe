@@ -40,7 +40,9 @@ class LaneVisualize(Node):
                 ('wp_filename', "wp.csv"),
                 ('wp_delim', ','),
                 ('wp_skiprows', 1),
-                ('config_path', "/home/autoware/gokart_ws/src/gokart-sensor/configs/pennovation"),
+                ('config_path', "/home/autoware/gokart-autoware/src/universe/autoware.universe/gokart/configs/purdue_2024"),
+
+                # ('config_path', "/home/autoware/gokart_ws/src/gokart-sensor/configs/pennovation"),
                 # ('config_path', "/home/autoware/gokart_ws/src/gokart-sensor/configs/pennovation_lotA"),
                 ('wp_overtake_filename', "overtake_wp_idx.npy"),
                 ('wp_corner_filename', "corner_wp_idx.npy"),

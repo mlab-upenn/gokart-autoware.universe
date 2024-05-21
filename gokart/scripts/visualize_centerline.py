@@ -16,12 +16,12 @@ import yaml
 
 ###### get config folder path from global config file #####
 cwd = os.getcwd()
-global_cfg_path = os.path.join(cwd, "src", "gokart-sensor", "configs", "global_config.yaml")
+global_cfg_path = os.path.join(cwd, "configs", "global_config.yaml")
 with open(global_cfg_path, 'r') as f:
     global_cfg = yaml.load(f, Loader=yaml.FullLoader)
 LOCATION = global_cfg["location"]
 TRACK_SPAN = global_cfg["track_width"]/2
-config_folder = os.path.join(cwd, "src", "gokart-sensor", "configs")
+config_folder = os.path.join(cwd, "configs")
 ###### get config folder path from global config file #####
 
 WP_FILE_NAME = "wp.csv"
@@ -40,9 +40,13 @@ def PJcurvature(x, y):
         [1, 0, 0],
         [1, t_b, t_b ** 2]
     ])
-
-    a = np.matmul(LA.inv(M), x)
-    b = np.matmul(LA.inv(M), y)
+    
+    if LA.det(M) == 0:
+        invM = LA.pinv(M)
+    else:
+        invM = LA.inv(M)
+    a = np.matmul(invM, x)
+    b = np.matmul(invM, y)
 
     kappa = 2 * (a[2] * b[1] - b[2] * a[1]) / (a[1] ** 2. + b[1] ** 2.) ** (1.5)
     return kappa, [b[1], -a[1]] / np.sqrt(a[1] ** 2. + b[1] ** 2.)
@@ -165,7 +169,7 @@ def visualize_curvature_for_wp(wp_x, wp_y, overtaking_thres=0.05, corner_thres =
 
 def save_wp_with_width(cwd, config_folder, location):
     wp_x, wp_y = read_wp(config_folder, location)
-    new_wp_file_path = os.path.join(cwd, 'src', 'gokart-sensor', 'scripts', 'trajectory_generator', 
+    new_wp_file_path = os.path.join(cwd, 'scripts', 'trajectory_generator', 
                                     'outputs', f'{location}_wp_w_width.csv')
     print(new_wp_file_path)
     with open(new_wp_file_path, 'w') as f:
@@ -176,7 +180,7 @@ def save_wp_with_width(cwd, config_folder, location):
 
 if __name__ == "__main__":
     cwd = os.getcwd()
-    config_folder = os.path.join(cwd, 'src', 'gokart-sensor', 'configs')
+    config_folder = os.path.join(cwd, 'configs')
     show_wp(config_folder, LOCATION)
     # visualize_curvature_for_wp(config_folder, LOCATION)
     save_wp_with_width(cwd, config_folder, LOCATION)

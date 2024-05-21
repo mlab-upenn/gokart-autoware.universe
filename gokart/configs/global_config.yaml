@@ -3,10 +3,15 @@
 # projection_center_longitude: -86.9447
 # track_width: 3.6
 
-location: "pennovation"
-projection_center_latitude: 39.9416
-projection_center_longitude: -75.1993
+location: "purdue_2024"
+projection_center_latitude: 40.4377
+projection_center_longitude: -86.9447
 track_width: 3.6
+
+# location: "pennovation"
+# projection_center_latitude: 39.9416
+# projection_center_longitude: -75.1993
+# track_width: 3.6
 
 # location: "pennovation_lotA"
 # projection_center_latitude: 39.941619

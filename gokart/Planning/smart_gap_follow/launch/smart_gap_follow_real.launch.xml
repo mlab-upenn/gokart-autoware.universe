@@ -2,9 +2,9 @@
   <arg name="input/image" default="~/input/image"/>
   <arg name="output/image" default="~/output/image"/>
   <arg name="param_path" default="$(find-pkg-share smart_gap_follow)/config/smart_gap_follow_real.yaml"/>
-
+target_speed
   <!-- Node -->
-  <node pkg="smart_gap_follow" exec="smart_gap_follow_node" name="smart_gap_follow" output="screen">
+  <node pkg="smart_gap_follow" exec="smart_gap_follow_node" name="smart_gap_follow" output="screen">target_speed
     <remap from="~/input/cam_image" to="/kart/camera"/>
     <remap from="~/input/track_scan" to="/classic_grass_detection/out/track_scan"/>
     <remap from="~/input/lidar_scan" to="/scanner/lidar_scan"/>

@@ -11,8 +11,8 @@
     range_thresh_min: 3.0
     min_gap_size: 2.0
     goal_angle: 0.0
-    wall_follow_clearance_min: 0.3    
+    wall_follow_clearance_min: 0.8   
     wall_follow_clearance_max: 3.0
     min_speed: 2.5
     slow_speed: 3.5
-    max_speed: 3.5
+    max_speed: 3.7
