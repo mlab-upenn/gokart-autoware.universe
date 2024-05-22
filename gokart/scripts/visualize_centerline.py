@@ -141,7 +141,7 @@ def visualize_curvature_for_wp(wp_x, wp_y, overtaking_thres=0.05, corner_thres =
     i = 0
     n_ka = len(ka)
     fast_zone_seg = [(-5, 20, 15, 40), (0, 15, 25, 25), (-40, 27, -25, 35),  (50, 20, 60, 60)]
-    fast_zone_multi = [1.5, 1.5, 1.5, 1.5]
+    fast_zone_multi = [2.0, 2.0, 1.5, 1.5]
     slow_zone_seg = []
     slow_zone_multi = []
     fast_idx = []
@@ -160,10 +160,10 @@ def visualize_curvature_for_wp(wp_x, wp_y, overtaking_thres=0.05, corner_thres =
         i += 1
     print("fast idx: ")
     print(fast_idx)
-    new_wp_path = os.path.join(config_folder, LOCATION, 'wp_speed.csv')
-    with open(new_wp_path, 'w') as f:
-        for i in range(len(waypoints)):
-            f.write(f'{waypoints[i, 0]},{waypoints[i, 1]},{waypoints[i, 2]}\n')
+    # new_wp_path = os.path.join(config_folder, LOCATION, 'wp_speed.csv')
+    # with open(new_wp_path, 'w') as f:
+    #     for i in range(len(waypoints)):
+    #         f.write(f'{waypoints[i, 0]},{waypoints[i, 1]},{waypoints[i, 2]}\n')
 
 
 

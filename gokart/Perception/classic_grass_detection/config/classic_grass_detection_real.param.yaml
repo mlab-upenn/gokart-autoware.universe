@@ -8,7 +8,7 @@
     grass_g_weight: 1.0
     cone_b_weight: 1.0
     cone_r_weight: 1.0
-    grass_thres: 20
+    grass_thres: 30
     cone_thres: 60
     cone_base_ratio: 0.15
     img_bot_left: [58, 702]

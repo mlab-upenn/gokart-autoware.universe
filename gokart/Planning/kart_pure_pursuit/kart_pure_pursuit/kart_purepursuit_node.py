@@ -56,14 +56,14 @@ class PurePursuit_node(Node):
                 ('pose_topic', '/gnss_ekf'),
                 # ('pose_topic', '/lidar_pose_topic'),
                 ('drive_topic', '/automous_command_to_nucleo'),
-                ('odom_topic', '/drive_info_from_nucleo')
-                ('reactive_fusion_drive_topic', '/fusion_command')
+                ('odom_topic', '/drive_info_from_nucleo'),
+                ('reactive_fusion_drive_topic', '/fusion_command'),
             ])
         
         
         self.get_logger().info("purepursuit node initialized")
         self.drive_pub = self.create_publisher(AckermannDriveStamped, self.get_parameter('drive_topic').get_parameter_value().string_value, 10)
-        self.reactive_fusion_drive_pub = self.create_publisher(AckermannDriveStamped, self.get_parameter('reactive_fusion_drive_topic').get_parameter_value().string_value, 10)
+        # self.reactive_fusion_drive_pub = self.create_publisher(AckermannDriveStamped, self.get_parameter('reactive_fusion_drive_topic').get_parameter_value().string_value, 10)
 
         self.target_pub = self.create_publisher(Point, '/pp_target', 10)
         self.pose_sub = self.create_subscription(PoseWithCovarianceStamped, self.get_parameter('pose_topic').get_parameter_value().string_value, self.pose_cb, 10)
@@ -108,7 +108,7 @@ class PurePursuit_node(Node):
         max_v = np.max(waypoints[:, 2]) * self.vel_scale
 
         # temporary number
-        max_v = 5.0
+        max_v = 8.0
 
         self.Pscale = max_v
         self.Lscale = max_v
@@ -157,7 +157,7 @@ class PurePursuit_node(Node):
         pub_target_point.y = target_global[1]
         self.target_pub.publish(pub_target_point)
         target_v = v_array[i_interp]
-        speed = target_v * self.vel_scale * 3.3
+        speed = target_v * self.vel_scale * 3.0
 
         R = np.array([[np.cos(curr_yaw), np.sin(curr_yaw)],
                       [-np.sin(curr_yaw), np.cos(curr_yaw)]])
@@ -173,13 +173,15 @@ class PurePursuit_node(Node):
             steer = self.get_steer_w_speed(cur_speed, error, corner=True)
         else:
             steer = self.get_steer_w_speed(cur_speed, error)
+
+        self.get_logger().info("target speed: {}".format(speed))
         
         message = AckermannDriveStamped()
         message.drive.speed = speed
         message.drive.steering_angle = steer
 
         self.drive_pub.publish(message)
-        self.reactive_fusion_drive_pub.publish(message)
+        # self.reactive_fusion_drive_pub.publish(message)
 
     def odom_cb(self, odom: AckermannDriveStamped):
         self.curr_vel = odom.drive.speed
@@ -224,8 +226,8 @@ class PurePursuit_node(Node):
         if corner:
             steer = cur_P * error
         else:
-            steer = cur_P * error + self.kd * d_error
-            # steer = cur_P * error
+            # steer = cur_P * error + self.kd * d_error
+            steer = cur_P * error
         
 
         new_steer = np.clip(steer, -self.max_steer, self.max_steer)
