@@ -57,11 +57,14 @@ class PurePursuit_node(Node):
                 # ('pose_topic', '/lidar_pose_topic'),
                 ('drive_topic', '/automous_command_to_nucleo'),
                 ('odom_topic', '/drive_info_from_nucleo')
+                ('reactive_fusion_drive_topic', '/fusion_command')
             ])
         
         
         self.get_logger().info("purepursuit node initialized")
         self.drive_pub = self.create_publisher(AckermannDriveStamped, self.get_parameter('drive_topic').get_parameter_value().string_value, 10)
+        self.reactive_fusion_drive_pub = self.create_publisher(AckermannDriveStamped, self.get_parameter('drive_topic').get_parameter_value().string_value, 10)
+
         self.target_pub = self.create_publisher(Point, '/pp_target', 10)
         self.pose_sub = self.create_subscription(PoseWithCovarianceStamped, self.get_parameter('pose_topic').get_parameter_value().string_value, self.pose_cb, 10)
         # self.pose_sub = self.create_subscription(PoseWithCovarianceStamped, self.get_parameter('/lidar_pose_topic').get_parameter_value().string_value, self.pose_cb, 10)
