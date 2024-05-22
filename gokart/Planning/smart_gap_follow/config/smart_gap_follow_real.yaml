@@ -9,13 +9,13 @@
     steering_speed: 0.7
     range_thresh_max: 8.0
     range_thresh_min: 3.0
-    min_gap_size: 2.0
+    min_gap_size: 3.0
     goal_angle: 0.0
     wall_follow_clearance_min: 1.2   
     wall_follow_clearance_max: 3.0
-    min_speed: 3.2
-    slow_speed: 3.5
-    max_speed: 4.0
-    one_bound_kp: 1.4
+    min_speed: 3.4
+    slow_speed: 3.3
+    max_speed: 4.8
+    one_bound_kp: 1.2
     small_angle_kp: 1.3
     large_angle_kp: 1.1
