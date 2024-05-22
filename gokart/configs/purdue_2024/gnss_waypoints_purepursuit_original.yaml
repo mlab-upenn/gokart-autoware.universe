@@ -15,19 +15,19 @@ ekf_gnss_node:
     origin_altitude: 172.91
 purepursuit_node:
   ros__parameters:
-    D: 1.0
+    D: 0.45
     config_path: /home/autoware/gokart-autoware/src/universe/autoware.universe/gokart/configs/purdue_2024
     debug_mode: true
     interpScale: 20
     maxL: 4.0
     maxL_corner: 4.0
-    maxP: 4.0
-    maxP_corner: 4.0
+    maxP: 5.1
+    maxP_corner: 5.1
     max_steer: 0.95
     minL: 2.0
     minL_corner: 2.0
-    minP: 2.0
-    minP_corner: 2.0
+    minP: 5.1
+    minP_corner: 5.1
     vel_scale: 1.0
     wp_corner_filename: corner_wp_idx.npy
     wp_delim: ','

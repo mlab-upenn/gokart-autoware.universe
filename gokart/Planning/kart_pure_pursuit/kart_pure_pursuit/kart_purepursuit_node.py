@@ -122,16 +122,16 @@ class PurePursuit_node(Node):
         curr_quat = pose_msg.pose.pose.orientation
         curr_yaw = math.atan2(2 * (curr_quat.w * curr_quat.z + curr_quat.x * curr_quat.y),
                               1 - 2 * (curr_quat.y ** 2 + curr_quat.z ** 2))
-        self.get_logger().info("current orientation (degree): {}".format(curr_yaw * 180 / np.pi))
+        # self.get_logger().info("current orientation (degree): {}".format(curr_yaw * 180 / np.pi))
 
         curr_pos_idx = np.argmin(np.linalg.norm(self.lane[0][:, :2] - curr_pos, axis=1))
         curr_lane_nearest_idx = np.argmin(np.linalg.norm(self.lane[self.last_lane][:, :2] - curr_pos, axis=1))
 
-        # if (curr_pos_idx in self.corner_idx):
-        #     L = self.get_L_w_speed(cur_speed, corner=True)
-        # else:
-        #     L = self.get_L_w_speed(cur_speed, corner=False)
-        L = self.get_L_w_speed(cur_speed, corner=False)
+        if (curr_pos_idx in self.corner_idx):
+            L = self.get_L_w_speed(cur_speed, corner=True)
+        else:
+            L = self.get_L_w_speed(cur_speed, corner=False)
+        # L = self.get_L_w_speed(cur_speed, corner=False)
 
         num_lane_pts = len(self.lane[self.last_lane])
         segment_end = curr_pos_idx
@@ -154,7 +154,7 @@ class PurePursuit_node(Node):
         pub_target_point.y = target_global[1]
         self.target_pub.publish(pub_target_point)
         target_v = v_array[i_interp]
-        speed = target_v * self.vel_scale * 3
+        speed = target_v * self.vel_scale * 3.3
 
         R = np.array([[np.cos(curr_yaw), np.sin(curr_yaw)],
                       [-np.sin(curr_yaw), np.cos(curr_yaw)]])
@@ -166,11 +166,10 @@ class PurePursuit_node(Node):
         L = np.linalg.norm(curr_pos - target_global)
         gamma = 2 / L ** 2
         error = gamma * target_local_y
-        # if(segment_end in self.corner_idx):
-        #     steer = self.get_steer_w_speed(cur_speed, error, corner=True)
-        # else:
-        #     steer = self.get_steer_w_speed(cur_speed, error)
-        steer = self.get_steer_w_speed(cur_speed, error)
+        if(segment_end in self.corner_idx):
+            steer = self.get_steer_w_speed(cur_speed, error, corner=True)
+        else:
+            steer = self.get_steer_w_speed(cur_speed, error)
         
         message = AckermannDriveStamped()
         message.drive.speed = speed
@@ -188,6 +187,13 @@ class PurePursuit_node(Node):
         else:
             interp_L_scale = (self.maxL-self.minL) / self.Lscale
             return interp_L_scale * speed + self.minL
+        
+        # if corner:
+        #     interp_L_scale = (self.maxL_corner - self.minL_corner) / self.Lscale_corner
+        #     return interp_L_scale * speed + self.minL_corner
+        # else:
+        #     interp_L_scale = (self.maxL - self.minL) / self.Lscale
+        #     return interp_L_scale * (1 / (speed + 1)) + self.minL  # Adjust this formula as needed
 
     def get_steer_w_speed(self, speed, error, corner=False):
         if corner:
@@ -207,14 +213,16 @@ class PurePursuit_node(Node):
         # print("error", error)
         # print("error_d", d_error)
         # print()
+        self.get_logger().info(f"KP: {cur_P}")
 
         self.prev_ditem = d_error
         self.prev_steer_error = error
         if corner:
             steer = cur_P * error
         else:
-            # steer = cur_P * error + self.kd * d_error
-            steer = cur_P * error
+            steer = cur_P * error + self.kd * d_error
+            # steer = cur_P * error
+        
 
         new_steer = np.clip(steer, -self.max_steer, self.max_steer)
         return new_steer

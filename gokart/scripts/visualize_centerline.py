@@ -161,6 +161,10 @@ def visualize_curvature_for_wp(wp_x, wp_y, overtaking_thres=0.05, corner_thres =
     plt.legend()
     plt.axis('equal')
 
+    # for i in range(1400,1500):
+    #     if ka[i] > 10000:
+    #         print('curvature: ', i, ka[i])
+
 
     ax = fig.add_subplot(2, 1, 2)
     plt.plot(ka, '-bo', markersize=0.1)

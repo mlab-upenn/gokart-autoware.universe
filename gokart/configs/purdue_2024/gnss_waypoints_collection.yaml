@@ -16,7 +16,7 @@ gnss_to_local_node:
 wp_record_node:
   ros__parameters:
     config_path: /home/autoware/gokart-autoware/src/universe/autoware.universe/gokart/configs/purdue_2024
-    frequency: 2
+    frequency: 10
     pose_topic: /gnss_ekf
     velocity: 1.0
     wp_filename: wp.csv
