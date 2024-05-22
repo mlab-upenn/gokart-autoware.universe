@@ -333,7 +333,12 @@ void SmartGapFollowNode::calcMotionCmd(const sensor_msgs::msg::LaserScan scan)
   if(abs(steer_angle) >= 18)
     steer_angle *= large_angle_kp;
 
-  float target_speed = max_speed * (1 - abs(steer_angle * 180 / M_PI) / 30);// * pow(std::min((float)1.0, dist_to_gap / 12), 1.5);
+  const steer_angle_limit = 40;
+  steer_angle = min(steer_angle, steer_angle_limit);
+  steer_angle = max(steer_angle, -steer_angle_limit);
+
+  float target_speed = min_speed + (max_speed - min_speed) * 
+    (1 - abs(steer_angle * 180 / M_PI) / steer_angle_limit);
   if(gap_size < 4.0)
     target_speed = min_speed;
   target_speed = max_speed;
