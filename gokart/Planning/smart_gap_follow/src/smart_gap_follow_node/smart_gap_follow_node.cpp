@@ -342,12 +342,20 @@ void SmartGapFollowNode::calcMotionCmd(const sensor_msgs::msg::LaserScan scan)
   //  steer_limit_max * 180 / M_PI <<"]");
   RCLCPP_INFO_STREAM(get_logger(), "steer_angle: "<<steer_angle * 180 / M_PI << " deg");
 
-  ackermann_msgs::msg::AckermannDriveStamped ackermann_msg;
-  ackermann_msg.drive.speed = target_speed;
-  ackermann_msg.drive.steering_angle = steer_angle;
-  ackermann_msg.drive.steering_angle_velocity = 1.0;
-  ackermann_msg.drive.acceleration = 2.0;
-  pub_drive_->publish(ackermann_msg);  
+  ackermann_msgs::msg::AckermannDriveStamped gap_follow_drive_msg;
+  gap_follow_drive_msg.drive.speed = target_speed;
+  gap_follow_drive_msg.drive.steering_angle = steer_angle;
+  gap_follow_drive_msg.drive.steering_angle_velocity = 1.0;
+  gap_follow_drive_msg.drive.acceleration = 2.0;
+
+  if(hybrid_mode && obstacle_detected){
+    pub_drive_->publish(pure_pursuit_drive_msg);
+    RCLCPP_INFO_STREAM(get_logger(), "pure_pursuit_cmd");
+  }  
+  else{
+    pub_drive_->publish(gap_follow_drive_msg);
+    RCLCPP_INFO_STREAM(get_logger(), "gap_follow_cmd");
+  }
 }
 
 sensor_msgs::msg::LaserScan SmartGapFollowNode::merge_scan(const sensor_msgs::msg::LaserScan scan_1,
@@ -364,8 +372,16 @@ sensor_msgs::msg::LaserScan SmartGapFollowNode::merge_scan(const sensor_msgs::ms
   merged_scan.range_min = scan_1.range_min;
   merged_scan.range_max = scan_1.range_max;
   merged_scan.ranges = scan_1.ranges;
-  for(int i = 0; i < (int)scan_1.ranges.size(); i++)
-    merged_scan.ranges[i] = scan_1.ranges[i] < scan_2.ranges[i] ? scan_1.ranges[i] : scan_2.ranges[i];
+  int num_scan_2_data_inside_scan_1 = 0;
+  for(int i = 0; i < (int)scan_1.ranges.size(); i++){
+    if(scan_2.ranges[i] < scan_1.ranges[i]){
+      merged_scan.ranges[i] = scan_2.ranges[i];
+      num_scan_2_data_inside_scan_1++;
+    }else
+      merged_scan.ranges[i] = scan_1.ranges[i];
+  }
+  obstacle_detected = num_scan_2_data_inside_scan_1 > 10;
+
   return merged_scan;
 }
 
@@ -424,7 +440,7 @@ void SmartGapFollowNode::onTrackBev(const sensor_msgs::msg::Image::ConstSharedPt
 void SmartGapFollowNode::onPurePursuitDrive(
   const ackermann_msgs::msg::AckermannDriveStamped pure_pursuit_drive_)
 {
-  pure_pursuit_drive = pure_pursuit_drive_;
+  pure_pursuit_drive_msg = pure_pursuit_drive_;
   hybrid_mode = true;
 }
 

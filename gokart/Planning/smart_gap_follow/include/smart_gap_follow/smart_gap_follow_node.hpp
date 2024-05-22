@@ -133,7 +133,7 @@ private:
   sensor_msgs::msg::LaserScan track_scan;
   sensor_msgs::msg::LaserScan lidar_scan;
   sensor_msgs::msg::LaserScan merged_scan;
-  ackermann_msgs::msg::AckermannDriveStamped pure_pursuit_drive;
+  ackermann_msgs::msg::AckermannDriveStamped pure_pursuit_drive_msg;
   bool hybrid_mode;
   bool obstacle_detected;
   double range_thresh;
