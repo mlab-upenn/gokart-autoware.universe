@@ -336,14 +336,16 @@ void SmartGapFollowNode::calcMotionCmd(const sensor_msgs::msg::LaserScan scan)
   if(abs(steer_angle) >= small_steer_angle_thresh)
     steer_angle *= large_angle_kp;
 
-  const steer_angle_limit = 45;
-  steer_angle = min(steer_angle, steer_angle_limit);
-  steer_angle = max(steer_angle, -steer_angle_limit);
+  const float steer_angle_limit = 45 * M_PI / 180;
+  steer_angle = std::min(steer_angle, steer_angle_limit);
+  steer_angle = std::max(steer_angle, -steer_angle_limit);
 
   float target_speed = min_speed + (max_speed - min_speed) * 
     (1 - abs(steer_angle * 180 / M_PI) / steer_angle_limit);
   if(gap_size < 4.0)
     target_speed = min_speed;
+
+  target_speed = max_speed;
 
   RCLCPP_INFO_STREAM(get_logger(), "target_speed: "<<target_speed << " m/s");
   //RCLCPP_INFO_STREAM(get_logger(), "steer_limits:["<<steer_limit_min * 180 / M_PI <<", "<<
@@ -354,7 +356,7 @@ void SmartGapFollowNode::calcMotionCmd(const sensor_msgs::msg::LaserScan scan)
   gap_follow_drive_msg.drive.speed = target_speed;
   gap_follow_drive_msg.drive.steering_angle = steer_angle;
   gap_follow_drive_msg.drive.steering_angle_velocity = 1.0;
-  gap_follow_drive_msg.drive.acceleration = 2.0;
+  gap_follow_drive_msg.drive.acceleration = 4.0;
 
   if(fusion_command && obstacle_detected){
     pub_drive_->publish(pure_pursuit_drive_msg);
