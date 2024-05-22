@@ -63,7 +63,7 @@ class PurePursuit_node(Node):
         
         self.get_logger().info("purepursuit node initialized")
         self.drive_pub = self.create_publisher(AckermannDriveStamped, self.get_parameter('drive_topic').get_parameter_value().string_value, 10)
-        self.reactive_fusion_drive_pub = self.create_publisher(AckermannDriveStamped, self.get_parameter('drive_topic').get_parameter_value().string_value, 10)
+        self.reactive_fusion_drive_pub = self.create_publisher(AckermannDriveStamped, self.get_parameter('reactive_fusion_drive_topic').get_parameter_value().string_value, 10)
 
         self.target_pub = self.create_publisher(Point, '/pp_target', 10)
         self.pose_sub = self.create_subscription(PoseWithCovarianceStamped, self.get_parameter('pose_topic').get_parameter_value().string_value, self.pose_cb, 10)
@@ -179,6 +179,7 @@ class PurePursuit_node(Node):
         message.drive.steering_angle = steer
 
         self.drive_pub.publish(message)
+        self.reactive_fusion_drive_pub.publish(message)
 
     def odom_cb(self, odom: AckermannDriveStamped):
         self.curr_vel = odom.drive.speed
