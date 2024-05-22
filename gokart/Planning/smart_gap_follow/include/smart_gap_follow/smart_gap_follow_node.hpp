@@ -60,6 +60,9 @@ public:
     double min_speed{};
     double slow_speed{};
     double max_speed{};
+    double one_bound_kp{};
+    double small_angle_kp{};
+    double large_angle_kp{};
   };
   /*
   struct Pose
@@ -89,18 +92,22 @@ private:
   rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr sub_lidar_scan_{};
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_cam_image_{};
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_track_bev_{};
+  rclcpp::Subscription<ackermann_msgs::msg::AckermannDriveStamped>::SharedPtr 
+    sub_pure_pursuit_drive_{};
 
   // Callback
   void onTrackScan(const sensor_msgs::msg::LaserScan::ConstSharedPtr msg);
   void onLidarScan(const sensor_msgs::msg::LaserScan::ConstSharedPtr msg);
   void onCamImage(const sensor_msgs::msg::Image::ConstSharedPtr msg);
   void onTrackBev(const sensor_msgs::msg::Image::ConstSharedPtr msg);
+  void onPurePursuitDrive(const ackermann_msgs::msg::AckermannDriveStamped msg);
 
   // Data Buffer
   sensor_msgs::msg::LaserScan::ConstSharedPtr track_scan_{};
   sensor_msgs::msg::LaserScan::ConstSharedPtr lidar_scan_{};
   sensor_msgs::msg::Image::ConstSharedPtr cam_image_{};
   sensor_msgs::msg::Image::ConstSharedPtr track_bev_{};
+  ackermann_msgs::msg::AckermannDriveStamped pure_pursuit_drive_{};
 
   // Publisher
   //rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_image_{};
@@ -126,6 +133,9 @@ private:
   sensor_msgs::msg::LaserScan track_scan;
   sensor_msgs::msg::LaserScan lidar_scan;
   sensor_msgs::msg::LaserScan merged_scan;
+  ackermann_msgs::msg::AckermannDriveStamped pure_pursuit_drive;
+  bool hybrid_mode;
+  bool obstacle_detected;
   double range_thresh;
   std::vector<std::pair<int, int>> gap_indices;
   bool deadend;

@@ -76,6 +76,9 @@ SmartGapFollowNode::SmartGapFollowNode(const rclcpp::NodeOptions & node_options)
   node_param_.min_speed = declare_parameter<double>("min_speed");
   node_param_.slow_speed = declare_parameter<double>("slow_speed");
   node_param_.max_speed = declare_parameter<double>("max_speed");
+  node_param_.one_bound_kp = declare_parameter<double>("one_bound_kp");
+  node_param_.small_angle_kp = declare_parameter<double>("small_angle_kp");
+  node_param_.large_angle_kp = declare_parameter<double>("large_angle_kp");
 
   // Subscriber
   rclcpp::QoS qos(rclcpp::KeepLast(1));
@@ -94,10 +97,16 @@ SmartGapFollowNode::SmartGapFollowNode(const rclcpp::NodeOptions & node_options)
     "~/input/track_bev", rclcpp::QoS{1},
     std::bind(&SmartGapFollowNode::onTrackBev, this, std::placeholders::_1));  
 
+  sub_pure_pursuit_drive_ = create_subscription<ackermann_msgs::msg::AckermannDriveStamped>(
+    "~/input/pure_pursuit_drive", qos, std::bind(&SmartGapFollowNode::onPurePursuitDrive, this, std::placeholders::_1));
+
   // Publisher
   pub_drive_ = this->create_publisher<ackermann_msgs::msg::AckermannDriveStamped>("~/out/drive", 10);
   pub_planning_cam_ = image_transport::create_publisher(this, "~/out/planning_cam");
   pub_planning_bev_ = image_transport::create_publisher(this, "~/out/planning_bev");
+
+  hybrid_mode = false;
+  obstacle_detected = false;
 }
 
 void SmartGapFollowNode::findGap(const sensor_msgs::msg::LaserScan scan)
@@ -267,6 +276,9 @@ void SmartGapFollowNode::calcMotionCmd(const sensor_msgs::msg::LaserScan scan)
   const float min_speed = node_param_.min_speed;
   //const float slow_speed = node_param_.slow_speed;
   const float max_speed = node_param_.max_speed;
+  const float one_bound_kp = node_param_.one_bound_kp;
+  const float small_angle_kp = node_param_.small_angle_kp;
+  const float large_angle_kp = node_param_.large_angle_kp;
   const float angle_increment = scan.angle_increment;
   const float angle_min = scan.angle_min;
   const float wall_follow_clearance_min = node_param_.wall_follow_clearance_min;
@@ -304,9 +316,9 @@ void SmartGapFollowNode::calcMotionCmd(const sensor_msgs::msg::LaserScan scan)
   float steer_angle;
   if(abs(steer_limit_min) * 180 / M_PI > 80 || abs(steer_limit_max) * 180 / M_PI > 80){
     if(abs(steer_limit_min) * 180 / M_PI > 80)
-      steer_angle = steer_limit_max * 1.45;
+      steer_angle = steer_limit_max * one_bound_kp;
     else
-      steer_angle = steer_limit_min * 1.35;
+      steer_angle = steer_limit_min * one_bound_kp;
   }else if(steer_limit_max > steer_limit_min){
     steer_angle = (steer_limit_min + steer_limit_max) / 2;
   }else{
@@ -315,11 +327,11 @@ void SmartGapFollowNode::calcMotionCmd(const sensor_msgs::msg::LaserScan scan)
     else
       steer_angle = steer_limit_min;
   }
-  if(abs(steer_angle) < 10)
-    steer_angle *= 1.5;
+  if(abs(steer_angle) < 18)
+    steer_angle *= small_angle_kp;
 
-  if(abs(steer_angle) >= 15)
-    steer_angle *= 1.4;
+  if(abs(steer_angle) >= 18)
+    steer_angle *= large_angle_kp;
 
   float target_speed = max_speed * (1 - abs(steer_angle * 180 / M_PI) / 30);// * pow(std::min((float)1.0, dist_to_gap / 12), 1.5);
   if(gap_size < 4.0)
@@ -407,6 +419,13 @@ void SmartGapFollowNode::onTrackBev(const sensor_msgs::msg::Image::ConstSharedPt
   pub_planning_bev_msg.encoding = sensor_msgs::image_encodings::MONO8; //BGR8;
   pub_planning_bev_.publish(pub_planning_bev_msg.toImageMsg());
   RCLCPP_INFO_STREAM(get_logger(), " ");
+}
+
+void SmartGapFollowNode::onPurePursuitDrive(
+  const ackermann_msgs::msg::AckermannDriveStamped pure_pursuit_drive_)
+{
+  pure_pursuit_drive = pure_pursuit_drive_;
+  hybrid_mode = true;
 }
 
 rcl_interfaces::msg::SetParametersResult SmartGapFollowNode::onSetParam(

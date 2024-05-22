@@ -16,3 +16,6 @@
     min_speed: 2.5
     slow_speed: 3.5
     max_speed: 4.0
+    one_bound_kp: 1.4
+    small_angle_kp: 1.3
+    large_angle_kp: 1.1
