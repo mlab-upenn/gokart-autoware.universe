@@ -327,13 +327,16 @@ void SmartGapFollowNode::calcMotionCmd(const sensor_msgs::msg::LaserScan scan)
     else
       steer_angle = steer_limit_min;
   }
-  if(abs(steer_angle) < 18)
+
+  const int small_steer_angle_thresh = 18;
+
+  if(abs(steer_angle) < small_steer_angle_thresh)
     steer_angle *= small_angle_kp;
 
-  if(abs(steer_angle) >= 18)
+  if(abs(steer_angle) >= small_steer_angle_thresh)
     steer_angle *= large_angle_kp;
 
-  const steer_angle_limit = 40;
+  const steer_angle_limit = 45;
   steer_angle = min(steer_angle, steer_angle_limit);
   steer_angle = max(steer_angle, -steer_angle_limit);
 

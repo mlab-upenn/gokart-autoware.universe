@@ -13,7 +13,7 @@
     goal_angle: 0.0
     wall_follow_clearance_min: 1.2   
     wall_follow_clearance_max: 3.0
-    min_speed: 2.5
+    min_speed: 3.2
     slow_speed: 3.5
     max_speed: 4.0
     one_bound_kp: 1.4
