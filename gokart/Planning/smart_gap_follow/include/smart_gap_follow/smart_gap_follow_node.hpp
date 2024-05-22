@@ -134,7 +134,7 @@ private:
   sensor_msgs::msg::LaserScan lidar_scan;
   sensor_msgs::msg::LaserScan merged_scan;
   ackermann_msgs::msg::AckermannDriveStamped pure_pursuit_drive_msg;
-  bool hybrid_mode;
+  bool fusion_command;
   bool obstacle_detected;
   double range_thresh;
   std::vector<std::pair<int, int>> gap_indices;

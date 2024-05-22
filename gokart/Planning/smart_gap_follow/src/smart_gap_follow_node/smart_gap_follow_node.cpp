@@ -105,7 +105,7 @@ SmartGapFollowNode::SmartGapFollowNode(const rclcpp::NodeOptions & node_options)
   pub_planning_cam_ = image_transport::create_publisher(this, "~/out/planning_cam");
   pub_planning_bev_ = image_transport::create_publisher(this, "~/out/planning_bev");
 
-  hybrid_mode = false;
+  fusion_command = false;
   obstacle_detected = false;
 }
 
@@ -348,7 +348,7 @@ void SmartGapFollowNode::calcMotionCmd(const sensor_msgs::msg::LaserScan scan)
   gap_follow_drive_msg.drive.steering_angle_velocity = 1.0;
   gap_follow_drive_msg.drive.acceleration = 2.0;
 
-  if(hybrid_mode && obstacle_detected){
+  if(fusion_command && obstacle_detected){
     pub_drive_->publish(pure_pursuit_drive_msg);
     RCLCPP_INFO_STREAM(get_logger(), "pure_pursuit_cmd");
   }  
@@ -441,7 +441,7 @@ void SmartGapFollowNode::onPurePursuitDrive(
   const ackermann_msgs::msg::AckermannDriveStamped pure_pursuit_drive_)
 {
   pure_pursuit_drive_msg = pure_pursuit_drive_;
-  hybrid_mode = true;
+  fusion_command = true;
 }
 
 rcl_interfaces::msg::SetParametersResult SmartGapFollowNode::onSetParam(

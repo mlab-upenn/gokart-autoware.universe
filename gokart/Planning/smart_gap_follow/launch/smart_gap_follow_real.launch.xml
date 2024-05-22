@@ -9,6 +9,7 @@ target_speed
     <remap from="~/input/track_scan" to="/classic_grass_detection/out/track_scan"/>
     <remap from="~/input/lidar_scan" to="/scanner/lidar_scan"/>
     <remap from="~/input/track_bev" to="/classic_grass_detection/out/track_bev"/>
+    <remap from="~/input/pure_pursuit_drive" to="/fusion_command"/>
     <remap from="~/out/drive" to="/automous_command_to_nucleo"/>
     <remap from="~/output/image" to="$(var output/image)"/>
     <param from="$(var param_path)"/>
