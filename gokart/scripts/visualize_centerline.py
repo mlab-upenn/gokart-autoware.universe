@@ -140,8 +140,8 @@ def visualize_curvature_for_wp(wp_x, wp_y, overtaking_thres=0.05, corner_thres =
     # speed up zone
     i = 0
     n_ka = len(ka)
-    fast_zone_seg = [(-5, 20, 15, 40), (0, 15, 25, 25), (-40, 27, -25, 35),  (50, 20, 60, 60)]
-    fast_zone_multi = [2.0, 2.0, 1.5, 1.5]
+    fast_zone_seg = [(-5, 20, 15, 55), (0, 15, 25, 25), (-40, 27, -25, 35),  (50, 20, 60, 60)]
+    fast_zone_multi = [1.5, 1.5, 1.5, 1.2]
     slow_zone_seg = []
     slow_zone_multi = []
     fast_idx = []
@@ -156,14 +156,14 @@ def visualize_curvature_for_wp(wp_x, wp_y, overtaking_thres=0.05, corner_thres =
             zone = fast_zone_seg[j]
             if wp_x[i] > zone[0] and wp_x[i] < zone[2] and wp_y[i] > zone[1] and wp_y[i] < zone[3] and i not in fast_idx:
                 fast_idx.append(i)
-                waypoints[i, 2] = fast_zone_multi[j]
+                waypoints[i, 2] *= fast_zone_multi[j]
         i += 1
     print("fast idx: ")
     print(fast_idx)
-    # new_wp_path = os.path.join(config_folder, LOCATION, 'wp_speed.csv')
-    # with open(new_wp_path, 'w') as f:
-    #     for i in range(len(waypoints)):
-    #         f.write(f'{waypoints[i, 0]},{waypoints[i, 1]},{waypoints[i, 2]}\n')
+    new_wp_path = os.path.join(config_folder, LOCATION, 'wp_speedzone.csv')
+    with open(new_wp_path, 'w') as f:
+        for i in range(len(waypoints)):
+            f.write(f'{waypoints[i, 0]},{waypoints[i, 1]},{waypoints[i, 2]}\n')
 
 
 
@@ -198,10 +198,6 @@ def visualize_curvature_for_wp(wp_x, wp_y, overtaking_thres=0.05, corner_thres =
     plt.quiver(po[:, 0], po[:, 1], ka * no[:, 0], ka * no[:, 1], label='curvature')
     plt.legend()
     plt.axis('equal')
-
-    # for i in range(1400,1500):
-    #     if ka[i] > 10000:
-    #         print('curvature: ', i, ka[i])
 
 
     ax = fig.add_subplot(2, 1, 2)
