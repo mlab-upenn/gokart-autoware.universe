@@ -196,7 +196,7 @@ void ClassicGrassDetectionNode::onImage(const sensor_msgs::msg::Image::ConstShar
   cv::rectangle(grass_mask, cv::Point(648, 830), cv::Point(1186, 1079), 0, -1, cv::LINE_8);
 
   //bev projection
-  cv::Mat bev, bev_grass;
+  cv::Mat bev, bev_grass, bev_box;
   cv::warpPerspective(img, bev, mat, bev_size, cv::INTER_LINEAR);
   cv::warpPerspective(grass_mask, bev_grass, mat, bev_size, cv::INTER_LINEAR); 
 
@@ -207,6 +207,32 @@ void ClassicGrassDetectionNode::onImage(const sensor_msgs::msg::Image::ConstShar
   kernel = getStructuringElement(cv::MORPH_RECT, cv::Size(10, 10));
   cv::dilate(bev_fov_edges, bev_fov_edges, kernel, cv::Point(-1, -1), 1);
 
+  
+  cv::Mat bgr_bev[3];
+  cv::split(bev, bgr_bev);
+  cv::Mat b_bev = bgr_bev[0];
+  cv::Mat g_bev = bgr_bev[1];
+  
+  cv::Mat box_bev_gray;
+  cv::absdiff(b_bev, 0.3 * g_bev, box_bev_gray);
+  cv::threshold(box_bev_gray, bev_box, 150, 255, cv::THRESH_BINARY);
+  std::vector<std::vector<cv::Point>> box_contours, filtered_box_contours;
+  std::vector<cv::Vec4i> hierarchy2;
+  findContours(bev_box, box_contours, hierarchy2, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+  
+  float BOX_MINIMUM_SIZE = 6000;
+  for(int i = 0; i < (int)box_contours.size(); i++) {
+    float area = contourArea(box_contours[i]);
+    // Size filter
+    if(area > BOX_MINIMUM_SIZE) {
+      filtered_box_contours.push_back(box_contours[i]);
+    }
+  }
+  cv::Mat filtered_box_mask = cv::Mat::zeros(bev.size(), cone_mask.type());
+  drawContours(filtered_box_mask, filtered_box_contours, -1, 255, -1);
+
+  cv::add(bev_grass, bev_box, bev_grass);
+  
   //bev to lidar_scan
   const int num_data = int((scan_angle_max - scan_angle_min) / scan_angle_increment) + 1;
   const int init_dist = 1000;
