@@ -192,8 +192,8 @@ void ClassicGrassDetectionNode::onImage(const sensor_msgs::msg::Image::ConstShar
   //fill hole and remove noise
   cv::morphologyEx(grass_mask, grass_mask, cv::MORPH_OPEN, kernel);
   cv::morphologyEx(grass_mask, grass_mask, cv::MORPH_CLOSE, kernel);
-  cv::rectangle(grass_mask, cv::Point(464, 938), cv::Point(1408, 1079), 0, -1, cv::LINE_8);
-  cv::rectangle(grass_mask, cv::Point(648, 830), cv::Point(1186, 1079), 0, -1, cv::LINE_8);
+  cv::rectangle(grass_mask, cv::Point(454, 928), cv::Point(1428, 1079), 0, -1, cv::LINE_8);
+  cv::rectangle(grass_mask, cv::Point(628, 820), cv::Point(1206, 1079), 0, -1, cv::LINE_8);
 
   //bev projection
   cv::Mat bev, bev_grass, bev_box;
