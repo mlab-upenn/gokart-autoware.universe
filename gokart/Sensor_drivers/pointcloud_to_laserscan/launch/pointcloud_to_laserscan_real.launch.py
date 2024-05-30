@@ -20,21 +20,21 @@ def generate_launch_description():
             package='tf2_ros',
             executable='static_transform_publisher',
             name='static_transform_publisher',
-            arguments=['0', '0', '0', '0', '0', '0', '1', 'map', 'cloud']
+            arguments=['0', '0', '0', '0', '0', '0', '1', 'map', 'os_sensor']
         ),
         Node(
             package='pointcloud_to_laserscan', executable='pointcloud_to_laserscan_node',
             remappings=[
-                ('~/input/pointcloud', [LaunchConfiguration('scanner'), '/ouster/points']),
+                ('~/input/pointcloud', '/ouster/points'),
                 ('~/output/laserscan', [LaunchConfiguration('scanner'), '/lidar_scan']),
                 ('~/output/pointcloud', [LaunchConfiguration('scanner'), '/cloud_out']),
                 ('~/output/ray', [LaunchConfiguration('scanner'), '/ray']),
                 ('~/output/stixel', [LaunchConfiguration('scanner'), '/stixel'])
             ],
             parameters=[{
-                'target_frame': 'base_link',
+                'target_frame': 'os_sensor',
                 'transform_tolerance': 0.01,
-                'min_height': 0.2,
+                'min_height': -0.3,
                 'max_height': 1.0,
                 'angle_min': -1.5708,  # -M_PI/2
                 'angle_max': 1.5708,  # M_PI/2

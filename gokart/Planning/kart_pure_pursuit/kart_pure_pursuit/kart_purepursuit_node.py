@@ -108,7 +108,7 @@ class PurePursuit_node(Node):
         max_v = np.max(waypoints[:, 2]) * self.vel_scale
 
         # temporary number
-        max_v = 8.0
+        # max_v = 8.0
 
         self.Pscale = max_v
         self.Lscale = max_v
@@ -157,7 +157,7 @@ class PurePursuit_node(Node):
         pub_target_point.y = target_global[1]
         self.target_pub.publish(pub_target_point)
         target_v = v_array[i_interp]
-        speed = target_v * self.vel_scale * 3.0
+        speed = target_v * self.vel_scale * 3.1
 
         R = np.array([[np.cos(curr_yaw), np.sin(curr_yaw)],
                       [-np.sin(curr_yaw), np.cos(curr_yaw)]])
