@@ -7,12 +7,15 @@
     car_back_to_drive_axle: 0.43
     car_back_to_steer_axle: 1.47
     steering_speed: 0.7
-    range_thresh_max: 10.0
+    range_thresh_max: 9.0
     range_thresh_min: 3.0
     min_gap_size: 2.0
     goal_angle: 0.0
     wall_follow_clearance_min: 0.3    
     wall_follow_clearance_max: 3.0
-    min_speed: 2.5
+    min_speed: 2.2
     slow_speed: 5.0
-    max_speed: 9.0
+    max_speed: 8.3
+    one_bound_kp: 0.5
+    small_angle_kp: 0.3
+    large_angle_kp: 0.5

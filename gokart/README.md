@@ -1,12 +1,12 @@
-# GoKart-Sensor-Ros2
+# gokart-autoware
 
-This is the latest ros2 Humble repo for gokart applications.
+This is the latest repo for the Autoware AV4EV gokart project. This version ported the original [gokart-sensor](https://github.com/mlab-upenn/gokart-sensor/tree/ros2_humble_purepursuit) repo (ros2_humble_purepursuit branch) into Autoware.Universe (May, 2024). Perception and planning packages developed for reactive race were also integrated. Follow the instructions to install the AV4EV gokart version of Autoware and Autoware.Universe.
 
-
+To reduce the chance of dependency version conflicts, it is recommended that Autoware is installed on a new and clean Ubuntu 22.04 system. Avoid installing any other drivers/packages until this Autoware installation process is completed. The Autoware installation process would automatically install the best versions of NVIDIA driver, cuda driver, etc, for the Autoware packages.
 
 ## Overview
 
-### Sensor Drivers
+### Sensor Drivers and Manual
 
 (1) Senpentrio Mosaic-H Dev Kit ([Manual](https://www.septentrio.com/en/products/gps/gnss-receiver-modules/mosaichdevkit)) + Swift Navigation RTK ([Link](https://www.swiftnav.com/skylark))
 
@@ -15,15 +15,6 @@ This is the latest ros2 Humble repo for gokart applications.
 (3) OAK-D camera ([Manual](https://docs.luxonis.com/projects/hardware/en/latest/pages/BW1098OAK.html) + [GitHub](https://github.com/luxonis/depthai-ros))
 
 (4) BNO055 IMU ([Manual](https://cdn-shop.adafruit.com/datasheets/BST_BNO055_DS000_12.pdf)) + LC231X UART to Serial Module ([Manual](https://www.digikey.com/en/products/detail/ftdi-future-technology-devices-international-ltd/LC231X/6823712))
-
-### Perception
-
-We use yolov8 ([ultralytics](https://docs.ultralytics.com/)) for camera object detection. Apart from the standard VOC mode, we also have a cone-detect model.
-
-> ├── Object_detection
->
-> │   └── yolov8_pkg
-
 
 
 ### Mapping & Localization
@@ -39,17 +30,20 @@ We use Lidarslam package ([link](https://github.com/rsasaki0109/lidarslam_ros2))
 > │   └── lidarslam_ros2
 
 
+# Installation for AV4EV Gokart-Autoware
 
-## Install
+## Prerequisites
+Ubuntu 22.04  
+Git
 
-Install dependency
+## 1. Install ROS2 Humble
+Follow the [instruction](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html) to install ROS2 Humble
+
+## 2. Install original gokart-sensor repo dependencies
 
 ```
 # general
 pip install transforms3d trajectory_planning_helpers
-
-# for yolov8
-pip install ultralytics
 
 # for OAK-D camera:
 sudo apt install ros-humble-depthai-ros
@@ -58,57 +52,50 @@ sudo apt install ros-humble-depthai-ros
 pip install pyserial
 ```
 
-Make a ros2 workspace under your home directory and git clone the source code to /src
+## 3. Install AV4EV gokart Autoware and Autoware.Universe
+This is the modified instruction of [Autoware installation from source](https://autowarefoundation.github.io/autoware-documentation/main/installation/autoware/source-installation/)
 
-```bash
-mkdir -p gokart_ws/src
-cd gokart_ws/src
-# clone the repo, make sure to use --recursive to fetch the submodules
-git clone -b ros2_humble_purepursuit --recursive git@github.com:mlab-upenn/gokart-sensor.git
-# go back to the workspace dir
-cd ..
-# use rosdep to install all the dependency needed by the ros2 packages
+### 1. Set up Autoware development environment
+Clone the gokart-autoware repo (forked from Autoware, May 2024) and move to the directory.
+
+```
+git clone https://github.com/mlab-upenn/gokart-autoware
+cd gokart-autoware
+```
+
+### 2. Install environment dependencies using the provided Ansible script.
+Enter `Y` when asked whether to install NVIDIA or Cuda drivers
+
+```
+./setup-dev-env.sh
+```
+
+### 3. Set up a workspace
+Create the src directory and clone repositories into it. The autoware.repos file was modified to import the AV4EV gokart version of Autoware.Universe. Autoware uses vcstool to construct workspaces.
+
+```
+cd gokart-autoware
+mkdir src
+vcs import src < autoware.repos
+```
+
+Install dependent ROS packages.
+Autoware requires some ROS 2 packages in addition to the core components. The tool rosdep allows an automatic search and installation of such dependencies.
+
+```
 source /opt/ros/humble/setup.bash
-rosdep install --from-paths src --ignore-src -r -y
-# build, the Release flag is required by the ouster driver
+rosdep update
+rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO
+```
+
+Build the workspace.
+Autoware uses colcon to build workspaces. For more advanced options, refer to the documentation.
+
+```
 colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
-source install/setup.bash
 ```
 
-
-
-## Usage
-
-### Hardware Setting
-
-**Ethernet**
-
-The Ouster is connected to the laptop through ethernet cable. After connecting, choose manual configuration and under IPv4, set Address to 192.0.2.200 and Netmask to 255.255.255.0. Restart your system and ping 192.0.2.100 to verify succesful connection.
-
-
-
-### Sensor Drivers
-
-Run ros2 launch/run in different terminals for each driver(see [tmux](#tmux-intro))
-
-```bash
-# under the workspace folder, source
-source /opt/ros/humble/setup.bash && source install/setup.bash
-
-# launch Ouster driver
-ros2 launch ouster_ros sensor.launch.xml sensor_hostname:=192.0.2.100 timestamp_mode:=TIME_FROM_ROS_TIME
-
-# launch gnss driver(default config is set to gnss.yaml)
-ros2 launch septentrio_gnss_driver rover.py
-
-# launch imu driver(default mode is set to NDOF)
-ros2 launch ros_imu_bno055 imu_launch.py
-
-# launch OAK-D camera driver
-ros2 launch depthai_examples rgb_publisher.launch.py
-```
-
-### Udev Rules
+### 4. Set up Udev rules
 
 BNO055 IMU
 ```bash
@@ -139,14 +126,34 @@ Unplug and replug in the devices. and you should find the devices by running
 ls /dev/sensors
 ```
 
-### Perception (yolov8)
+## Usage
 
-Run the following commands in three different terminals.
+### Hardware Setting
+
+**Ethernet**
+
+The Ouster is connected to the laptop through ethernet cable. After connecting, choose manual configuration and under IPv4, set Address to 192.0.2.200 and Netmask to 255.255.255.0. Restart your system and ping 192.0.2.100 to verify succesful connection.
+
+### Sensor Drivers
+
+Run ros2 launch/run in different terminals for each driver(see [tmux](#tmux-intro))
 
 ```bash
-ros2 launch yolov8_pkg yolov8_node.launch.py
-ros2 bag play <your_bag_name>
-rviz2
+# under the gokart-autoware folder, source
+cd gokart-autoware
+source /opt/ros/humble/setup.bash && source install/setup.bash
+
+# launch Ouster driver
+ros2 launch ouster_ros sensor.launch.xml sensor_hostname:=192.0.2.100 timestamp_mode:=TIME_FROM_ROS_TIME
+
+# launch gnss driver(default config is set to gnss.yaml)
+ros2 launch septentrio_gnss_driver rover.py
+
+# launch imu driver(default mode is set to NDOF)
+ros2 launch ros_imu_bno055 imu_launch.py
+
+# launch OAK-D camera driver
+ros2 launch depthai_examples rgb_publisher.launch.py
 ```
 
 ### LiDAR SLAM
@@ -162,7 +169,6 @@ You can show all the topic list and echo some specific topics to see if the driv
 ros2 topic list
 ros2 topic echo <topic name> --no-arr
 ```
-
 
 
 ## Reference Links

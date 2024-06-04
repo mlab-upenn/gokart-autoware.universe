@@ -192,8 +192,9 @@ void ClassicGrassDetectionNode::onImage(const sensor_msgs::msg::Image::ConstShar
   //fill hole and remove noise
   cv::morphologyEx(grass_mask, grass_mask, cv::MORPH_OPEN, kernel);
   cv::morphologyEx(grass_mask, grass_mask, cv::MORPH_CLOSE, kernel);
-  cv::rectangle(grass_mask, cv::Point(454, 928), cv::Point(1428, 1079), 0, -1, cv::LINE_8);
-  cv::rectangle(grass_mask, cv::Point(628, 820), cv::Point(1206, 1079), 0, -1, cv::LINE_8);
+  //cv::rectangle(grass_mask, cv::Point(454, 928), cv::Point(1428, 1079), 0, -1, cv::LINE_8);
+  //cv::rectangle(grass_mask, cv::Point(628, 820), cv::Point(1206, 1079), 0, -1, cv::LINE_8);
+  cv::rectangle(grass_mask, cv::Point(491, 800), cv::Point(1437, 1079), 0, -1, cv::LINE_8);
 
   //bev projection
   cv::Mat bev, bev_grass, bev_box;
@@ -231,7 +232,7 @@ void ClassicGrassDetectionNode::onImage(const sensor_msgs::msg::Image::ConstShar
   cv::Mat filtered_box_mask = cv::Mat::zeros(bev.size(), cone_mask.type());
   drawContours(filtered_box_mask, filtered_box_contours, -1, 255, -1);
 
-  cv::add(bev_grass, bev_box, bev_grass);
+  //cv::add(bev_grass, bev_box, bev_grass);
   
   //bev to lidar_scan
   const int num_data = int((scan_angle_max - scan_angle_min) / scan_angle_increment) + 1;
