@@ -189,11 +189,12 @@ void PointCloudToLaserScanNode::subscriptionListenerThreadLoop()
       laserscan_pub_->get_intra_process_subscription_count();
     if (subscription_count > 0) {
       if (!sub_.getSubscriber()) {
-        RCLCPP_DEBUG(
+        RCLCPP_INFO(
           this->get_logger(),
           "Got a subscriber to laserscan, starting pointcloud subscriber");
         rclcpp::SensorDataQoS qos;
         qos.keep_last(input_queue_size_);
+        // qos.reliability(RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT);
         sub_.subscribe(this, "~/input/pointcloud", qos.get_rmw_qos_profile());
       }
     } else if (sub_.getSubscriber()) {
@@ -210,6 +211,7 @@ void PointCloudToLaserScanNode::subscriptionListenerThreadLoop()
 
 void PointCloudToLaserScanNode::cloudCallback(PointCloud2::ConstSharedPtr cloud_msg)
 {
+  std::cout << "cloudCallback\n" << std::endl;
   // build laserscan output
   auto scan_msg = std::make_unique<sensor_msgs::msg::LaserScan>();
   scan_msg->header = cloud_msg->header;

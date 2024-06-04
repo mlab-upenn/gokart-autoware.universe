@@ -20,13 +20,13 @@ purepursuit_node:
     debug_mode: true
     interpScale: 20
     maxL: 4.5
-    maxL_corner: 3.5
-    maxP: 3.5
+    maxL_corner: 3.8
+    maxP: 3.0
     maxP_corner: 3.5
     max_steer: 0.95
-    minL: 2.0
-    minL_corner: 2.0
-    minP: 3.5
+    minL: 2.5
+    minL_corner: 2.5
+    minP: 3.0
     minP_corner: 3.5
     vel_scale: 1.0
     wp_corner_filename: corner_wp_idx.npy

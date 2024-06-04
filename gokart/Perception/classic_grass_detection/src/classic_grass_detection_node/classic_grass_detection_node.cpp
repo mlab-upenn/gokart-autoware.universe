@@ -216,7 +216,7 @@ void ClassicGrassDetectionNode::onImage(const sensor_msgs::msg::Image::ConstShar
   
   cv::Mat box_bev_gray;
   cv::absdiff(b_bev, 0.3 * g_bev, box_bev_gray);
-  cv::threshold(box_bev_gray, bev_box, 150, 255, cv::THRESH_BINARY);
+  cv::threshold(box_bev_gray, bev_box, 180, 255, cv::THRESH_BINARY);
   std::vector<std::vector<cv::Point>> box_contours, filtered_box_contours;
   std::vector<cv::Vec4i> hierarchy2;
   findContours(bev_box, box_contours, hierarchy2, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
