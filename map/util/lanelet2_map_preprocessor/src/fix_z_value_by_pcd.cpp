@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <lanelet2_extension/io/autoware_osm_parser.hpp>
-#include <lanelet2_extension/projection/mgrs_projector.hpp>
-#include <lanelet2_extension/utility/message_conversion.hpp>
+#include <autoware_lanelet2_extension/io/autoware_osm_parser.hpp>
+#include <autoware_lanelet2_extension/projection/mgrs_projector.hpp>
+#include <autoware_lanelet2_extension/utility/message_conversion.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
@@ -91,11 +91,6 @@ double getMinHeightAroundPoint(
   return min_height;
 }
 
-bool exists(std::unordered_set<lanelet::Id> & set, lanelet::Id element)
-{
-  return std::find(set.begin(), set.end(), element) != set.end();
-}
-
 void adjustHeight(
   const pcl::PointCloud<pcl::PointXYZ>::Ptr & pcd_map_ptr, lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
@@ -108,7 +103,7 @@ void adjustHeight(
 
   for (lanelet::Lanelet & llt : lanelet_map_ptr->laneletLayer) {
     for (lanelet::Point3d & pt : llt.leftBound()) {
-      if (exists(done, pt.id())) {
+      if (done.find(pt.id()) != done.end()) {
         continue;
       }
       pcl::PointXYZ pcl_pt;
@@ -122,7 +117,7 @@ void adjustHeight(
       done.insert(pt.id());
     }
     for (lanelet::Point3d & pt : llt.rightBound()) {
-      if (exists(done, pt.id())) {
+      if (done.find(pt.id()) != done.end()) {
         continue;
       }
       pcl::PointXYZ pcl_pt;

@@ -5,19 +5,20 @@
   <version>0.1.0</version>
   <description>The image_diagnostics_package</description>
   <maintainer email="dai.nguyen@tier4.jp">Dai Nguyen</maintainer>
+  <maintainer email="yoshi.ri@tier4.jp">Yoshi Ri</maintainer>
   <license>Apache License 2.0</license>
 
   <author email="dai.nguyen@tier4.jp">Dai Nguyen</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
+  <depend>autoware_universe_utils</depend>
   <depend>cv_bridge</depend>
   <depend>diagnostic_updater</depend>
   <depend>image_transport</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
-  <depend>tier4_autoware_utils</depend>
   <depend>tier4_debug_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>

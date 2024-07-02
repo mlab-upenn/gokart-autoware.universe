@@ -120,7 +120,6 @@ public:
     // Parse human readable names for the classes
     std::ifstream label_file{label_filename};
     if (!label_file.good()) {
-      std::string label_filename = label_filename;
       throw std::runtime_error("unable to open label file:" + label_filename);
     }
     std::string line{};
@@ -131,7 +130,6 @@ public:
     // Get anchor values for this network from the anchor file
     std::ifstream anchor_file{anchor_filename};
     if (!anchor_file.good()) {
-      std::string anchor_filename = anchor_filename;
       throw std::runtime_error("unable to open anchor file:" + anchor_filename);
     }
     std::string first{};
@@ -199,6 +197,8 @@ public:
               max_ind = i_class;
             }
           }
+
+          if (max_ind == -1) continue;
 
           // Decode and copy class probabilities
           std::vector<float> class_probabilities{};

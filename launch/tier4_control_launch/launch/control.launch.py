@@ -24,6 +24,7 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import ComposableNodeContainer
 from launch_ros.actions import LoadComposableNodes
+from launch_ros.actions import Node
 from launch_ros.actions import PushRosNamespace
 from launch_ros.descriptions import ComposableNode
 from launch_ros.substitutions import FindPackageShare
@@ -52,7 +53,8 @@ def launch_setup(context, *args, **kwargs):
     with open(LaunchConfiguration("control_validator_param_path").perform(context), "r") as f:
         control_validator_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     with open(
-        LaunchConfiguration("operation_mode_transition_manager_param_path").perform(context), "r"
+        LaunchConfiguration("operation_mode_transition_manager_param_path").perform(context),
+        "r",
     ) as f:
         operation_mode_transition_manager_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     with open(LaunchConfiguration("shift_decider_param_path").perform(context), "r") as f:
@@ -65,9 +67,10 @@ def launch_setup(context, *args, **kwargs):
         aeb_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     with open(LaunchConfiguration("predicted_path_checker_param_path").perform(context), "r") as f:
         predicted_path_checker_param = yaml.safe_load(f)["/**"]["ros__parameters"]
+    trajectory_follower_mode = LaunchConfiguration("trajectory_follower_mode").perform(context)
 
     controller_component = ComposableNode(
-        package="trajectory_follower_node",
+        package="autoware_trajectory_follower_node",
         plugin="autoware::motion::control::trajectory_follower_node::Controller",
         name="controller_node_exe",
         namespace="trajectory_follower",
@@ -100,8 +103,8 @@ def launch_setup(context, *args, **kwargs):
 
     # lane departure checker
     lane_departure_component = ComposableNode(
-        package="lane_departure_checker",
-        plugin="lane_departure_checker::LaneDepartureCheckerNode",
+        package="autoware_lane_departure_checker",
+        plugin="autoware::lane_departure_checker::LaneDepartureCheckerNode",
         name="lane_departure_checker_node",
         namespace="trajectory_follower",
         remappings=[
@@ -120,9 +123,9 @@ def launch_setup(context, *args, **kwargs):
 
     # shift decider
     shift_decider_component = ComposableNode(
-        package="shift_decider",
-        plugin="ShiftDecider",
-        name="shift_decider",
+        package="autoware_shift_decider",
+        plugin="autoware::shift_decider::ShiftDecider",
+        name="autoware_shift_decider",
         remappings=[
             ("input/control_cmd", "/control/trajectory_follower/control_cmd"),
             ("input/state", "/autoware/state"),
@@ -137,7 +140,7 @@ def launch_setup(context, *args, **kwargs):
 
     # autonomous emergency braking
     autonomous_emergency_braking = ComposableNode(
-        package="autonomous_emergency_braking",
+        package="autoware_autonomous_emergency_braking",
         plugin="autoware::motion::control::autonomous_emergency_braking::AEB",
         name="autonomous_emergency_braking",
         remappings=[
@@ -145,6 +148,7 @@ def launch_setup(context, *args, **kwargs):
             ("~/input/velocity", "/vehicle/status/velocity_status"),
             ("~/input/imu", "/sensing/imu/imu_data"),
             ("~/input/odometry", "/localization/kinematic_state"),
+            ("~/input/objects", "/perception/object_recognition/objects"),
             (
                 "~/input/predicted_trajectory",
                 "/control/trajectory_follower/lateral/predicted_trajectory",
@@ -192,8 +196,8 @@ def launch_setup(context, *args, **kwargs):
 
     # vehicle cmd gate
     vehicle_cmd_gate_component = ComposableNode(
-        package="vehicle_cmd_gate",
-        plugin="vehicle_cmd_gate::VehicleCmdGate",
+        package="autoware_vehicle_cmd_gate",
+        plugin="autoware::vehicle_cmd_gate::VehicleCmdGate",
         name="vehicle_cmd_gate",
         remappings=[
             ("input/steering", "/vehicle/status/steering_status"),
@@ -243,10 +247,10 @@ def launch_setup(context, *args, **kwargs):
     )
 
     # operation mode transition manager
-    operation_mode_transition_manager_component = ComposableNode(
-        package="operation_mode_transition_manager",
-        plugin="operation_mode_transition_manager::OperationModeTransitionManager",
-        name="operation_mode_transition_manager",
+    autoware_operation_mode_transition_manager_component = ComposableNode(
+        package="autoware_operation_mode_transition_manager",
+        plugin="autoware::operation_mode_transition_manager::OperationModeTransitionManager",
+        name="autoware_operation_mode_transition_manager",
         remappings=[
             # input
             ("kinematics", "/localization/kinematic_state"),
@@ -270,7 +274,10 @@ def launch_setup(context, *args, **kwargs):
     # external cmd selector
     external_cmd_selector_loader = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            [FindPackageShare("external_cmd_selector"), "/launch/external_cmd_selector.launch.py"]
+            [
+                FindPackageShare("autoware_external_cmd_selector"),
+                "/launch/external_cmd_selector.launch.py",
+            ]
         ),
         launch_arguments=[
             ("use_intra_process", LaunchConfiguration("use_intra_process")),
@@ -285,7 +292,10 @@ def launch_setup(context, *args, **kwargs):
     # external cmd converter
     external_cmd_converter_loader = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            [FindPackageShare("external_cmd_converter"), "/launch/external_cmd_converter.launch.py"]
+            [
+                FindPackageShare("autoware_external_cmd_converter"),
+                "/launch/external_cmd_converter.launch.py",
+            ]
         ),
         launch_arguments=[
             ("use_intra_process", LaunchConfiguration("use_intra_process")),
@@ -328,25 +338,66 @@ def launch_setup(context, *args, **kwargs):
     )
 
     # set container to run all required components in the same process
-    container = ComposableNodeContainer(
-        name="control_container",
-        namespace="",
-        package="rclcpp_components",
-        executable=LaunchConfiguration("container_executable"),
-        composable_node_descriptions=[
-            controller_component,
-            lane_departure_component,
-            shift_decider_component,
-            vehicle_cmd_gate_component,
-            operation_mode_transition_manager_component,
-            glog_component,
+    if trajectory_follower_mode == "trajectory_follower_node":
+        container = ComposableNodeContainer(
+            name="control_container",
+            namespace="",
+            package="rclcpp_components",
+            executable=LaunchConfiguration("container_executable"),
+            composable_node_descriptions=[
+                controller_component,
+                lane_departure_component,
+                shift_decider_component,
+                vehicle_cmd_gate_component,
+                autoware_operation_mode_transition_manager_component,
+                glog_component,
+            ],
+        )
+
+    elif trajectory_follower_mode == "smart_mpc_trajectory_follower":
+        container = ComposableNodeContainer(
+            name="control_container",
+            namespace="",
+            package="rclcpp_components",
+            executable=LaunchConfiguration("container_executable"),
+            composable_node_descriptions=[
+                lane_departure_component,
+                shift_decider_component,
+                vehicle_cmd_gate_component,
+                autoware_operation_mode_transition_manager_component,
+                glog_component,
+            ],
+        )
+    else:
+        raise Exception(
+            f"The argument trajectory_follower_mode must be either trajectory_follower_node or smart_mpc_trajectory_follower, but {trajectory_follower_mode} was given."
+        )
+
+    # control evaluator
+    control_evaluator_component = ComposableNode(
+        package="autoware_control_evaluator",
+        plugin="control_diagnostics::controlEvaluatorNode",
+        name="control_evaluator",
+        remappings=[
+            ("~/input/diagnostics", "/diagnostics"),
+            ("~/input/odometry", "/localization/kinematic_state"),
+            ("~/input/acceleration", "/localization/acceleration"),
+            ("~/input/trajectory", "/planning/scenario_planning/trajectory"),
+            ("~/metrics", "/diagnostic/control_evaluator/metrics"),
+            ("~/input/vector_map", "/map/vector_map"),
+            ("~/input/route", "/planning/mission_planning/route"),
         ],
+    )
+
+    control_evaluator_loader = LoadComposableNodes(
+        composable_node_descriptions=[control_evaluator_component],
+        target_container="/control/control_container",
     )
 
     # control validator checker
     control_validator_component = ComposableNode(
-        package="control_validator",
-        plugin="control_validator::ControlValidator",
+        package="autoware_control_validator",
+        plugin="autoware::control_validator::ControlValidator",
         name="control_validator",
         remappings=[
             ("~/input/kinematics", "/localization/kinematic_state"),
@@ -369,6 +420,7 @@ def launch_setup(context, *args, **kwargs):
             obstacle_collision_checker_loader,
             autonomous_emergency_braking_loader,
             predicted_path_checker_loader,
+            control_evaluator_loader,
         ]
     )
 
@@ -391,7 +443,16 @@ def launch_setup(context, *args, **kwargs):
             ),
         ]
     )
-    return [group, control_validator_group]
+
+    smart_mpc_trajectory_follower = Node(
+        package="autoware_smart_mpc_trajectory_follower",
+        executable="pympc_trajectory_follower.py",
+        name="controller_node_exe",
+    )
+    if trajectory_follower_mode == "trajectory_follower_node":
+        return [group, control_validator_group]
+    elif trajectory_follower_mode == "smart_mpc_trajectory_follower":
+        return [group, control_validator_group, smart_mpc_trajectory_follower]
 
 
 def generate_launch_description():
@@ -430,11 +491,17 @@ def generate_launch_description():
     # component
     add_launch_arg("use_intra_process", "false", "use ROS 2 component container communication")
     add_launch_arg("use_multithread", "true", "use multithread")
+    add_launch_arg(
+        "trajectory_follower_mode",
+        "trajectory_follower_node",
+        "Options for which trajectory_follower to use. Options: `trajectory_follower_node`, `smart_mpc_trajectory_follower`",
+    )
     set_container_executable = SetLaunchConfiguration(
         "container_executable",
         "component_container",
         condition=UnlessCondition(LaunchConfiguration("use_multithread")),
     )
+
     set_container_mt_executable = SetLaunchConfiguration(
         "container_executable",
         "component_container_mt",

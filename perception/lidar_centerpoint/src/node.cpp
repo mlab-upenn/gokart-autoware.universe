@@ -14,17 +14,7 @@
 
 #include "lidar_centerpoint/node.hpp"
 
-#include <lidar_centerpoint/centerpoint_config.hpp>
-#include <lidar_centerpoint/preprocess/pointcloud_densification.hpp>
-#include <lidar_centerpoint/ros_utils.hpp>
-#include <lidar_centerpoint/utils.hpp>
-#include <pcl_ros/transforms.hpp>
-
-#ifdef ROS_DISTRO_GALACTIC
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#else
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-#endif
+#include "pcl_ros/transforms.hpp"
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
@@ -33,40 +23,52 @@
 #include <string>
 #include <vector>
 
+#ifdef ROS_DISTRO_GALACTIC
+#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
+#else
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+#endif
+
+#include "lidar_centerpoint/centerpoint_config.hpp"
+#include "lidar_centerpoint/preprocess/pointcloud_densification.hpp"
+#include "lidar_centerpoint/ros_utils.hpp"
+#include "lidar_centerpoint/utils.hpp"
+
 namespace centerpoint
 {
 LidarCenterPointNode::LidarCenterPointNode(const rclcpp::NodeOptions & node_options)
 : Node("lidar_center_point", node_options), tf_buffer_(this->get_clock())
 {
   const float score_threshold =
-    static_cast<float>(this->declare_parameter<double>("score_threshold", 0.35));
-  const float circle_nms_dist_threshold =
-    static_cast<float>(this->declare_parameter<double>("circle_nms_dist_threshold"));
+    static_cast<float>(this->declare_parameter<double>("post_process_params.score_threshold"));
+  const float circle_nms_dist_threshold = static_cast<float>(
+    this->declare_parameter<double>("post_process_params.circle_nms_dist_threshold"));
   const auto yaw_norm_thresholds =
-    this->declare_parameter<std::vector<double>>("yaw_norm_thresholds");
+    this->declare_parameter<std::vector<double>>("post_process_params.yaw_norm_thresholds");
   const std::string densification_world_frame_id =
-    this->declare_parameter("densification_world_frame_id", "map");
+    this->declare_parameter<std::string>("densification_params.world_frame_id");
   const int densification_num_past_frames =
-    this->declare_parameter("densification_num_past_frames", 1);
-  const std::string trt_precision = this->declare_parameter("trt_precision", "fp16");
+    this->declare_parameter<int>("densification_params.num_past_frames");
+  const std::string trt_precision = this->declare_parameter<std::string>("trt_precision");
   const std::string encoder_onnx_path = this->declare_parameter<std::string>("encoder_onnx_path");
   const std::string encoder_engine_path =
     this->declare_parameter<std::string>("encoder_engine_path");
   const std::string head_onnx_path = this->declare_parameter<std::string>("head_onnx_path");
   const std::string head_engine_path = this->declare_parameter<std::string>("head_engine_path");
-  class_names_ = this->declare_parameter<std::vector<std::string>>("class_names");
-  has_variance_ = this->declare_parameter<bool>("has_variance");
-  has_twist_ = this->declare_parameter<bool>("has_twist");
-  const std::size_t point_feature_size =
-    static_cast<std::size_t>(this->declare_parameter<std::int64_t>("point_feature_size"));
+  class_names_ = this->declare_parameter<std::vector<std::string>>("model_params.class_names");
+  has_twist_ = this->declare_parameter<bool>("model_params.has_twist");
+  const std::size_t point_feature_size = static_cast<std::size_t>(
+    this->declare_parameter<std::int64_t>("model_params.point_feature_size"));
+  has_variance_ = this->declare_parameter<bool>("model_params.has_variance");
   const std::size_t max_voxel_size =
-    static_cast<std::size_t>(this->declare_parameter<std::int64_t>("max_voxel_size"));
-  const auto point_cloud_range = this->declare_parameter<std::vector<double>>("point_cloud_range");
-  const auto voxel_size = this->declare_parameter<std::vector<double>>("voxel_size");
-  const std::size_t downsample_factor =
-    static_cast<std::size_t>(this->declare_parameter<std::int64_t>("downsample_factor"));
-  const std::size_t encoder_in_feature_size =
-    static_cast<std::size_t>(this->declare_parameter<std::int64_t>("encoder_in_feature_size"));
+    static_cast<std::size_t>(this->declare_parameter<std::int64_t>("model_params.max_voxel_size"));
+  const auto point_cloud_range =
+    this->declare_parameter<std::vector<double>>("model_params.point_cloud_range");
+  const auto voxel_size = this->declare_parameter<std::vector<double>>("model_params.voxel_size");
+  const std::size_t downsample_factor = static_cast<std::size_t>(
+    this->declare_parameter<std::int64_t>("model_params.downsample_factor"));
+  const std::size_t encoder_in_feature_size = static_cast<std::size_t>(
+    this->declare_parameter<std::int64_t>("model_params.encoder_in_feature_size"));
   const auto allow_remapping_by_area_matrix =
     this->declare_parameter<std::vector<int64_t>>("allow_remapping_by_area_matrix");
   const auto min_area_matrix = this->declare_parameter<std::vector<double>>("min_area_matrix");
@@ -78,10 +80,11 @@ LidarCenterPointNode::LidarCenterPointNode(const rclcpp::NodeOptions & node_opti
   {
     NMSParams p;
     p.nms_type_ = NMS_TYPE::IoU_BEV;
-    p.target_class_names_ =
-      this->declare_parameter<std::vector<std::string>>("iou_nms_target_class_names");
-    p.search_distance_2d_ = this->declare_parameter<double>("iou_nms_search_distance_2d");
-    p.iou_threshold_ = this->declare_parameter<double>("iou_nms_threshold");
+    p.target_class_names_ = this->declare_parameter<std::vector<std::string>>(
+      "post_process_params.iou_nms_target_class_names");
+    p.search_distance_2d_ =
+      this->declare_parameter<double>("post_process_params.iou_nms_search_distance_2d");
+    p.iou_threshold_ = this->declare_parameter<double>("post_process_params.iou_nms_threshold");
     iou_bev_nms_.setParameters(p);
   }
 
@@ -110,13 +113,13 @@ LidarCenterPointNode::LidarCenterPointNode(const rclcpp::NodeOptions & node_opti
   pointcloud_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
     "~/input/pointcloud", rclcpp::SensorDataQoS{}.keep_last(1),
     std::bind(&LidarCenterPointNode::pointCloudCallback, this, std::placeholders::_1));
-  objects_pub_ = this->create_publisher<autoware_auto_perception_msgs::msg::DetectedObjects>(
+  objects_pub_ = this->create_publisher<autoware_perception_msgs::msg::DetectedObjects>(
     "~/output/objects", rclcpp::QoS{1});
 
   // initialize debug tool
   {
-    using tier4_autoware_utils::DebugPublisher;
-    using tier4_autoware_utils::StopWatch;
+    using autoware::universe_utils::DebugPublisher;
+    using autoware::universe_utils::StopWatch;
     stop_watch_ptr_ = std::make_unique<StopWatch<std::chrono::milliseconds>>();
     debug_publisher_ptr_ = std::make_unique<DebugPublisher>(this, "lidar_centerpoint");
     stop_watch_ptr_->tic("cyclic_time");
@@ -127,7 +130,8 @@ LidarCenterPointNode::LidarCenterPointNode(const rclcpp::NodeOptions & node_opti
     RCLCPP_INFO(this->get_logger(), "TensorRT engine is built and shutdown node.");
     rclcpp::shutdown();
   }
-  published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
+  published_time_publisher_ =
+    std::make_unique<autoware::universe_utils::PublishedTimePublisher>(this);
 }
 
 void LidarCenterPointNode::pointCloudCallback(
@@ -149,15 +153,15 @@ void LidarCenterPointNode::pointCloudCallback(
     return;
   }
 
-  std::vector<autoware_auto_perception_msgs::msg::DetectedObject> raw_objects;
+  std::vector<autoware_perception_msgs::msg::DetectedObject> raw_objects;
   raw_objects.reserve(det_boxes3d.size());
   for (const auto & box3d : det_boxes3d) {
-    autoware_auto_perception_msgs::msg::DetectedObject obj;
+    autoware_perception_msgs::msg::DetectedObject obj;
     box3DToDetectedObject(box3d, class_names_, has_twist_, has_variance_, obj);
     raw_objects.emplace_back(obj);
   }
 
-  autoware_auto_perception_msgs::msg::DetectedObjects output_msg;
+  autoware_perception_msgs::msg::DetectedObjects output_msg;
   output_msg.header = input_pointcloud_msg->header;
   output_msg.objects = iou_bev_nms_.apply(raw_objects);
 

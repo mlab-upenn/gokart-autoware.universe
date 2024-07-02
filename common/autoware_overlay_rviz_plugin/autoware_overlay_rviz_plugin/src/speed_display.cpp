@@ -50,7 +50,7 @@ SpeedDisplay::SpeedDisplay() : current_speed_(0.0)
 }
 
 void SpeedDisplay::updateSpeedData(
-  const autoware_auto_vehicle_msgs::msg::VelocityReport::ConstSharedPtr & msg)
+  const autoware_vehicle_msgs::msg::VelocityReport::ConstSharedPtr & msg)
 {
   try {
     // Assuming msg->state.longitudinal_velocity_mps is the field you're interested in
@@ -64,7 +64,7 @@ void SpeedDisplay::updateSpeedData(
 }
 
 // void SpeedDisplay::processMessage(const
-// autoware_auto_vehicle_msgs::msg::VelocityReport::ConstSharedPtr msg)
+// autoware_vehicle_msgs::msg::VelocityReport::ConstSharedPtr msg)
 // {
 //     try
 //     {
@@ -85,7 +85,7 @@ void SpeedDisplay::drawSpeedDisplay(QPainter & painter, const QRectF & backgroun
     backgroundRect.width() / 2 - referenceRect.width() / 2 - 5, backgroundRect.height() / 2);
 
   QString speedNumber = QString::number(current_speed_, 'f', 0);
-  int fontSize = 60;
+  int fontSize = 40;
   QFont speedFont("Quicksand", fontSize);
   painter.setFont(speedFont);
 
@@ -94,16 +94,17 @@ void SpeedDisplay::drawSpeedDisplay(QPainter & painter, const QRectF & backgroun
 
   // Center the speed number in the backgroundRect
   QPointF speedPos(
-    backgroundRect.center().x() - speedNumberRect.width() / 2, backgroundRect.center().y());
+    backgroundRect.center().x() - speedNumberRect.width() / 2,
+    backgroundRect.center().y() + speedNumberRect.bottom());
   painter.setPen(gray);
   painter.drawText(speedPos, speedNumber);
 
-  QFont unitFont("Quicksand", 14);
+  QFont unitFont("Quicksand", 8, QFont::DemiBold);
   painter.setFont(unitFont);
   QString speedUnit = "km/h";
   QRect unitRect = painter.fontMetrics().boundingRect(speedUnit);
   QPointF unitPos(
-    (backgroundRect.width() / 2 - unitRect.width() / 2), referencePos.y() + unitRect.height());
+    (backgroundRect.width() / 2 - unitRect.width() / 2), referencePos.y() + unitRect.height() + 15);
   painter.drawText(unitPos, speedUnit);
 }
 

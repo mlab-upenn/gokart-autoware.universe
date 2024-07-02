@@ -102,8 +102,8 @@ UnitConfig * FileLoader::create_unit_config(const TreeData & data)
     unit->item = create_link_config(item, unit);
   }
   const auto list = unit->data.optional("list").children();
-  for (const auto & data : list) {
-    unit->list.push_back(create_link_config(data, unit));
+  for (const auto & tree_data : list) {
+    unit->list.push_back(create_link_config(tree_data, unit));
   }
   return unit;
 }
@@ -232,8 +232,8 @@ void apply_edits(FileConfig & config)
       if (remove_links.count(link) == 0) {
         filtered_list.push_back(link);
       }
-      unit->list = filtered_list;
     }
+    unit->list = filtered_list;
   }
 
   // Remove units and links.
