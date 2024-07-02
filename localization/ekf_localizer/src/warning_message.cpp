@@ -18,8 +18,7 @@
 
 #include <string>
 
-std::string pose_delay_step_warning_message(
-  const double delay_time, const double delay_time_threshold)
+std::string poseDelayStepWarningMessage(const double delay_time, const double delay_time_threshold)
 {
   const std::string s =
     "Pose delay exceeds the compensation limit, ignored. "
@@ -27,8 +26,7 @@ std::string pose_delay_step_warning_message(
   return fmt::format(s, delay_time, delay_time_threshold);
 }
 
-std::string twist_delay_step_warning_message(
-  const double delay_time, const double delay_time_threshold)
+std::string twistDelayStepWarningMessage(const double delay_time, const double delay_time_threshold)
 {
   const std::string s =
     "Twist delay exceeds the compensation limit, ignored. "
@@ -36,19 +34,19 @@ std::string twist_delay_step_warning_message(
   return fmt::format(s, delay_time, delay_time_threshold);
 }
 
-std::string pose_delay_time_warning_message(const double delay_time)
+std::string poseDelayTimeWarningMessage(const double delay_time)
 {
   const std::string s = "Pose time stamp is inappropriate, set delay to 0[s]. delay = {:.3f}";
   return fmt::format(s, delay_time);
 }
 
-std::string twist_delay_time_warning_message(const double delay_time)
+std::string twistDelayTimeWarningMessage(const double delay_time)
 {
   const std::string s = "Twist time stamp is inappropriate, set delay to 0[s]. delay = {:.3f}";
   return fmt::format(s, delay_time);
 }
 
-std::string mahalanobis_warning_message(const double distance, const double max_distance)
+std::string mahalanobisWarningMessage(const double distance, const double max_distance)
 {
   const std::string s = "The Mahalanobis distance {:.4f} is over the limit {:.4f}.";
   return fmt::format(s, distance, max_distance);

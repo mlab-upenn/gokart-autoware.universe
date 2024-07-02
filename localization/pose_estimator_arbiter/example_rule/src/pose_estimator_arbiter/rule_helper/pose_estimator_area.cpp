@@ -14,8 +14,8 @@
 
 #include "pose_estimator_arbiter/rule_helper/pose_estimator_area.hpp"
 
-#include <autoware_lanelet2_extension/utility/message_conversion.hpp>
-#include <autoware_lanelet2_extension/utility/utilities.hpp>
+#include <lanelet2_extension/utility/message_conversion.hpp>
+#include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/logging.hpp>
 
 #include <boost/geometry/geometry.hpp>
@@ -33,14 +33,14 @@ using BoostPolygon = boost::geometry::model::polygon<BoostPoint>;
 
 struct PoseEstimatorArea::Impl
 {
-  explicit Impl(const rclcpp::Logger & logger) : logger_(logger) {}
+  explicit Impl(rclcpp::Logger logger) : logger_(logger) {}
   std::multimap<std::string, BoostPolygon> bounding_boxes_;
 
   void init(HADMapBin::ConstSharedPtr msg);
-  [[nodiscard]] bool within(
+  bool within(
     const geometry_msgs::msg::Point & point, const std::string & pose_estimator_name) const;
 
-  [[nodiscard]] MarkerArray debug_marker_array() const { return marker_array_; }
+  MarkerArray debug_marker_array() const { return marker_array_; }
 
 private:
   rclcpp::Logger logger_;
@@ -105,7 +105,7 @@ void PoseEstimatorArea::Impl::init(HADMapBin::ConstSharedPtr msg)
     marker.color.set__r(1.0f).set__g(1.0f).set__b(0.0f).set__a(1.0f);
     marker.ns = subtype;
     marker.header.frame_id = "map";
-    marker.id = static_cast<int>(marker_array_.markers.size());
+    marker.id = marker_array_.markers.size();
 
     // Enqueue the vertices of the polygon to bounding box and visualization marker
     BoostPolygon poly;

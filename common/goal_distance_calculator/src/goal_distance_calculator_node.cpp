@@ -14,9 +14,9 @@
 
 #include "goal_distance_calculator/goal_distance_calculator_node.hpp"
 
-#include <autoware/universe_utils/math/unit_conversion.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/timer.hpp>
+#include <tier4_autoware_utils/math/unit_conversion.hpp>
 
 #include <tier4_debug_msgs/msg/float64_stamped.hpp>
 
@@ -33,6 +33,12 @@ GoalDistanceCalculatorNode::GoalDistanceCalculatorNode(const rclcpp::NodeOptions
   self_pose_listener_(this),
   debug_publisher_(this, "goal_distance_calculator")
 {
+  using std::placeholders::_1;
+
+  static constexpr std::size_t queue_size = 1;
+  rclcpp::QoS durable_qos(queue_size);
+  durable_qos.transient_local();
+
   // Node Parameter
   node_param_.update_rate = declare_parameter<double>("update_rate");
   node_param_.oneshot = declare_parameter<bool>("oneshot");
@@ -40,6 +46,11 @@ GoalDistanceCalculatorNode::GoalDistanceCalculatorNode(const rclcpp::NodeOptions
   // Core
   goal_distance_calculator_ = std::make_unique<GoalDistanceCalculator>();
   goal_distance_calculator_->setParam(param_);
+
+  // Subscriber
+  sub_route_ = create_subscription<autoware_auto_planning_msgs::msg::Route>(
+    "/planning/mission_planning/route", queue_size,
+    [&](const autoware_auto_planning_msgs::msg::Route::SharedPtr msg_ptr) { route_ = msg_ptr; });
 
   // Wait for first self pose
   self_pose_listener_.waitForFirstPose();
@@ -51,54 +62,53 @@ GoalDistanceCalculatorNode::GoalDistanceCalculatorNode(const rclcpp::NodeOptions
   goal_distance_calculator_ = std::make_unique<GoalDistanceCalculator>();
 }
 
-bool GoalDistanceCalculatorNode::tryGetCurrentPose(
-  geometry_msgs::msg::PoseStamped::ConstSharedPtr current_pose)
+bool GoalDistanceCalculatorNode::isDataReady()
 {
-  auto current_pose_tmp = self_pose_listener_.getCurrentPose();
-  if (!current_pose_tmp) return false;
-  current_pose = current_pose_tmp;
+  if (!current_pose_) {
+    RCLCPP_INFO_THROTTLE(
+      this->get_logger(), *this->get_clock(), 5000, "waiting for current_pose...");
+    return false;
+  }
+
+  if (!route_) {
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 5000, "waiting for route msg...");
+    return false;
+  }
+
   return true;
 }
 
-bool GoalDistanceCalculatorNode::tryGetRoute(
-  autoware_planning_msgs::msg::LaneletRoute::ConstSharedPtr route)
+bool GoalDistanceCalculatorNode::isDataTimeout()
 {
-  auto route_tmp = sub_route_.takeData();
-  if (!route_tmp) return false;
-  route = route_tmp;
-  return true;
+  constexpr double th_pose_timeout = 1.0;
+  const auto pose_time_diff = rclcpp::Time(current_pose_->header.stamp) - now();
+  if (pose_time_diff.seconds() > th_pose_timeout) {
+    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "pose is timeout...");
+    return true;
+  }
+  return false;
 }
 
 void GoalDistanceCalculatorNode::onTimer()
 {
-  Input input = Input();
+  current_pose_ = self_pose_listener_.getCurrentPose();
 
-  if (!tryGetCurrentPose(input.current_pose)) {
-    RCLCPP_INFO_THROTTLE(
-      this->get_logger(), *this->get_clock(), 5000, "waiting for current_pose...");
+  if (!isDataReady()) {
     return;
   }
 
-  if (!tryGetRoute(input.route)) {
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 5000, "waiting for route msg...");
+  if (isDataTimeout()) {
     return;
   }
 
-  // Check pose timeout
-  {
-    constexpr double th_pose_timeout = 1.0;
-    const auto pose_time_diff = rclcpp::Time(input.current_pose->header.stamp) - now();
-    if (pose_time_diff.seconds() > th_pose_timeout) {
-      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "pose is timeout...");
-      return;
-    }
-  }
+  input_.current_pose = current_pose_;
+  input_.route = route_;
 
-  Output output = goal_distance_calculator_->update(input);
+  output_ = goal_distance_calculator_->update(input_);
 
   {
-    using autoware::universe_utils::rad2deg;
-    const auto & deviation = output.goal_deviation;
+    using tier4_autoware_utils::rad2deg;
+    const auto & deviation = output_.goal_deviation;
 
     debug_publisher_.publish<tier4_debug_msgs::msg::Float64Stamped>(
       "deviation/lateral", deviation.lateral);

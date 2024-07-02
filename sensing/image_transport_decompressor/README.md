@@ -22,8 +22,6 @@ The `image_transport_decompressor` is a node that decompresses images.
 
 ## Parameters
 
-{{ json_to_markdown("sensing/image_transport_decompressor/schema/image_transport_decompressor.schema.json") }}
-
 ## Assumptions / Known limits
 
 ## (Optional) Error detection and handling

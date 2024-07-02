@@ -37,37 +37,34 @@ namespace yabloc
 {
 struct Area
 {
-  Area() = default;
+  Area() {}
   explicit Area(const Eigen::Vector2f & v)
   {
-    if (unit_length < 0) {
+    if (unit_length_ < 0) {
       throw_error();
     }
-    x = static_cast<int>(std::floor(v.x() / unit_length));
-    y = static_cast<int>(std::floor(v.y() / unit_length));
+    x = static_cast<int>(std::floor(v.x() / unit_length_));
+    y = static_cast<int>(std::floor(v.y() / unit_length_));
   }
 
-  [[nodiscard]] Eigen::Vector2f real_scale() const
-  {
-    return {static_cast<float>(x) * unit_length, static_cast<float>(y) * unit_length};
-  }
+  Eigen::Vector2f real_scale() const { return {x * unit_length_, y * unit_length_}; }
 
-  [[nodiscard]] std::array<Eigen::Vector2f, 2> real_scale_boundary() const
+  std::array<Eigen::Vector2f, 2> real_scale_boundary() const
   {
     std::array<Eigen::Vector2f, 2> boundary;
     boundary.at(0) = real_scale();
-    boundary.at(1) = real_scale() + Eigen::Vector2f(unit_length, unit_length);
+    boundary.at(1) = real_scale() + Eigen::Vector2f(unit_length_, unit_length_);
     return boundary;
   };
 
-  static void throw_error()
+  void throw_error() const
   {
     std::cerr << "Area::unit_length_ is not initialized" << std::endl;
     throw std::runtime_error("invalid Area::unit_length");
   }
-  int x{}, y{};
-  static float unit_length;
-  static float image_size;
+  int x, y;
+  static float unit_length_;
+  static float image_size_;
 
   friend bool operator==(const Area & one, const Area & other)
   {
@@ -132,7 +129,7 @@ private:
   rclcpp::Logger logger_;
   std::optional<float> height_{std::nullopt};
 
-  common::GammaConverter gamma_converter_{4.0f};
+  common::GammaConverter gamma_converter{4.0f};
 
   std::unordered_map<Area, bool, Area> map_accessed_;
 
@@ -141,7 +138,7 @@ private:
   std::vector<BgPolygon> bounding_boxes_;
   std::unordered_map<Area, cv::Mat, Area> cost_maps_;
 
-  cv::Point to_cv_point(const Area & area, const Eigen::Vector2f & p) const;
+  cv::Point to_cv_point(const Area & are, const Eigen::Vector2f) const;
   void build_map(const Area & area);
 
   cv::Mat create_available_area_image(const Area & area) const;

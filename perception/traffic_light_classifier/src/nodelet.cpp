@@ -157,9 +157,6 @@ void TrafficLightClassifierNodelet::imageRoiCallback(
 
 bool TrafficLightClassifierNodelet::is_harsh_backlight(const cv::Mat & img) const
 {
-  if (img.empty()) {
-    return false;
-  }
   cv::Mat y_cr_cb;
   cv::cvtColor(img, y_cr_cb, cv::COLOR_RGB2YCrCb);
 

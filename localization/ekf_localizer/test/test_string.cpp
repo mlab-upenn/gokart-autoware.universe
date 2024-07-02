@@ -16,11 +16,11 @@
 
 #include <gtest/gtest.h>
 
-TEST(erase_leading_slash, SmokeTest)
+TEST(EraseLeadingSlash, SmokeTest)
 {
-  EXPECT_EQ(erase_leading_slash("/topic"), "topic");
-  EXPECT_EQ(erase_leading_slash("topic"), "topic");  // do nothing
+  EXPECT_EQ(eraseLeadingSlash("/topic"), "topic");
+  EXPECT_EQ(eraseLeadingSlash("topic"), "topic");  // do nothing
 
-  EXPECT_EQ(erase_leading_slash(""), "");
-  EXPECT_EQ(erase_leading_slash("/"), "");
+  EXPECT_EQ(eraseLeadingSlash(""), "");
+  EXPECT_EQ(eraseLeadingSlash("/"), "");
 }

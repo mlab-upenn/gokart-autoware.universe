@@ -38,7 +38,7 @@ public:
   using MarkerArray = visualization_msgs::msg::MarkerArray;
   using Float32 = std_msgs::msg::Float32;
 
-  explicit GnssParticleCorrector(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+  GnssParticleCorrector();
 
 private:
   const float mahalanobis_distance_threshold_;

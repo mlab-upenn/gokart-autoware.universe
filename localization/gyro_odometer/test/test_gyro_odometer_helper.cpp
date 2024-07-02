@@ -17,7 +17,7 @@
 using geometry_msgs::msg::TwistWithCovarianceStamped;
 using sensor_msgs::msg::Imu;
 
-Imu generate_sample_imu()
+Imu generateSampleImu()
 {
   Imu imu;
   imu.header.frame_id = "base_link";
@@ -27,7 +27,7 @@ Imu generate_sample_imu()
   return imu;
 }
 
-TwistWithCovarianceStamped generate_sample_velocity()
+TwistWithCovarianceStamped generateSampleVelocity()
 {
   TwistWithCovarianceStamped twist;
   twist.header.frame_id = "base_link";
@@ -35,7 +35,7 @@ TwistWithCovarianceStamped generate_sample_velocity()
   return twist;
 }
 
-rclcpp::NodeOptions get_node_options_with_default_params()
+rclcpp::NodeOptions getNodeOptionsWithDefaultParams()
 {
   rclcpp::NodeOptions node_options;
 

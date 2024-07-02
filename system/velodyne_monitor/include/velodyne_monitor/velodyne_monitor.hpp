@@ -41,7 +41,7 @@ public:
   /**
    * @brief constructor
    */
-  explicit VelodyneMonitor(const rclcpp::NodeOptions & options);
+  VelodyneMonitor();
 
 protected:
   using DiagStatus = diagnostic_msgs::msg::DiagnosticStatus;

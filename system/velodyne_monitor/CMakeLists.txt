@@ -5,17 +5,14 @@ find_package(autoware_cmake REQUIRED)
 find_package(fmt)
 autoware_package()
 
-ament_auto_add_library(${PROJECT_NAME} SHARED
+### Target executable
+ament_auto_add_executable(velodyne_monitor
+  src/velodyne_monitor_node.cpp
   src/velodyne_monitor.cpp
 )
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME} cpprest crypto fmt)
-
-rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "VelodyneMonitor"
-  EXECUTABLE ${PROJECT_NAME}_node
-)
+target_link_libraries(velodyne_monitor cpprest crypto fmt)
 
 ament_auto_package(INSTALL_TO_SHARE
   launch

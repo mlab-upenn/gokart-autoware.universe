@@ -30,8 +30,6 @@ public:
   PoseWithCovarianceStamped get_pose();
 
 private:
-  void on_pose(PoseWithCovarianceStamped::ConstSharedPtr msg);
-
   map_height_fitter::MapHeightFitter fitter_;
   rclcpp::Clock::SharedPtr clock_;
   rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr sub_gnss_pose_;

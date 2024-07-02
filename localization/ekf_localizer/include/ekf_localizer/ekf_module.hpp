@@ -34,13 +34,24 @@
 
 struct EKFDiagnosticInfo
 {
-  size_t no_update_count{0};
-  size_t queue_size{0};
-  bool is_passed_delay_gate{true};
-  double delay_time{0.0};
-  double delay_time_threshold{0.0};
-  bool is_passed_mahalanobis_gate{true};
-  double mahalanobis_distance{0.0};
+  EKFDiagnosticInfo()
+  : no_update_count(0),
+    queue_size(0),
+    is_passed_delay_gate(true),
+    delay_time(0),
+    delay_time_threshold(0),
+    is_passed_mahalanobis_gate(true),
+    mahalanobis_distance(0)
+  {
+  }
+
+  size_t no_update_count;
+  size_t queue_size;
+  bool is_passed_delay_gate;
+  double delay_time;
+  double delay_time_threshold;
+  bool is_passed_mahalanobis_gate;
+  double mahalanobis_distance;
 };
 
 class EKFModule
@@ -52,32 +63,31 @@ private:
   using Twist = geometry_msgs::msg::TwistStamped;
 
 public:
-  EKFModule(std::shared_ptr<Warning> warning, const HyperParameters & params);
+  EKFModule(std::shared_ptr<Warning> warning, const HyperParameters params);
 
   void initialize(
     const PoseWithCovariance & initial_pose,
     const geometry_msgs::msg::TransformStamped & transform);
 
-  [[nodiscard]] geometry_msgs::msg::PoseStamped get_current_pose(
+  geometry_msgs::msg::PoseStamped getCurrentPose(
     const rclcpp::Time & current_time, const double z, const double roll, const double pitch,
     bool get_biased_yaw) const;
-  [[nodiscard]] geometry_msgs::msg::TwistStamped get_current_twist(
-    const rclcpp::Time & current_time) const;
-  [[nodiscard]] double get_yaw_bias() const;
-  [[nodiscard]] std::array<double, 36> get_current_pose_covariance() const;
-  [[nodiscard]] std::array<double, 36> get_current_twist_covariance() const;
+  geometry_msgs::msg::TwistStamped getCurrentTwist(const rclcpp::Time & current_time) const;
+  double getYawBias() const;
+  std::array<double, 36> getCurrentPoseCovariance() const;
+  std::array<double, 36> getCurrentTwistCovariance() const;
 
-  [[nodiscard]] size_t find_closest_delay_time_index(double target_value) const;
+  size_t find_closest_delay_time_index(double target_value) const;
   void accumulate_delay_time(const double dt);
 
-  void predict_with_delay(const double dt);
-  bool measurement_update_pose(
+  void predictWithDelay(const double dt);
+  bool measurementUpdatePose(
     const PoseWithCovariance & pose, const rclcpp::Time & t_curr,
     EKFDiagnosticInfo & pose_diag_info);
-  bool measurement_update_twist(
+  bool measurementUpdateTwist(
     const TwistWithCovariance & twist, const rclcpp::Time & t_curr,
     EKFDiagnosticInfo & twist_diag_info);
-  geometry_msgs::msg::PoseWithCovarianceStamped compensate_pose_with_z_delay(
+  geometry_msgs::msg::PoseWithCovarianceStamped compensatePoseWithZDelay(
     const PoseWithCovariance & pose, const double delay_time);
 
 private:

@@ -20,10 +20,10 @@
 #include "ekf_localizer/hyper_parameters.hpp"
 #include "ekf_localizer/warning.hpp"
 
-#include <autoware/universe_utils/geometry/geometry.hpp>
-#include <autoware/universe_utils/ros/logger_level_configure.hpp>
-#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <tier4_autoware_utils/ros/logger_level_configure.hpp>
+#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <geometry_msgs/msg/pose_array.hpp>
@@ -58,15 +58,17 @@ public:
     x_ = 0;
     dev_ = 1e9;
     proc_dev_x_c_ = 0.0;
+    return;
   };
-  void init(const double init_obs, const double obs_dev, const rclcpp::Time & time)
+  void init(const double init_obs, const double obs_dev, const rclcpp::Time time)
   {
     x_ = init_obs;
     dev_ = obs_dev;
     latest_time_ = time;
     initialized_ = true;
+    return;
   };
-  void update(const double obs, const double obs_dev, const rclcpp::Time & time)
+  void update(const double obs, const double obs_dev, const rclcpp::Time time)
   {
     if (!initialized_) {
       init(obs, obs_dev, time);
@@ -84,9 +86,10 @@ public:
     dev_ = (1 - kalman_gain) * dev_;
 
     latest_time_ = time;
+    return;
   };
   void set_proc_dev(const double proc_dev) { proc_dev_x_c_ = proc_dev; }
-  [[nodiscard]] double get_x() const { return x_; }
+  double get_x() const { return x_; }
 
 private:
   bool initialized_;
@@ -142,7 +145,7 @@ private:
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_br_;
 
   //!< @brief logger configure module
-  std::unique_ptr<autoware::universe_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 
   //!< @brief  extended kalman filter instance.
   std::unique_ptr<EKFModule> ekf_module_;
@@ -155,9 +158,10 @@ private:
   double ekf_dt_;
 
   /* process noise variance for discrete model */
-  double proc_cov_yaw_d_;  //!< @brief  discrete yaw process noise
-  double proc_cov_vx_d_;   //!< @brief  discrete process noise in d_vx=0
-  double proc_cov_wz_d_;   //!< @brief  discrete process noise in d_wz=0
+  double proc_cov_yaw_d_;       //!< @brief  discrete yaw process noise
+  double proc_cov_yaw_bias_d_;  //!< @brief  discrete yaw bias process noise
+  double proc_cov_vx_d_;        //!< @brief  discrete process noise in d_vx=0
+  double proc_cov_wz_d_;        //!< @brief  discrete process noise in d_wz=0
 
   bool is_activated_;
 
@@ -170,45 +174,44 @@ private:
   /**
    * @brief computes update & prediction of EKF for each ekf_dt_[s] time
    */
-  void timer_callback();
+  void timerCallback();
 
   /**
    * @brief publish tf for tf_rate [Hz]
    */
-  void timer_tf_callback();
+  void timerTFCallback();
 
   /**
-   * @brief set pose with covariance measurement
+   * @brief set poseWithCovariance measurement
    */
-  void callback_pose_with_covariance(geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
+  void callbackPoseWithCovariance(geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
 
   /**
-   * @brief set twist with covariance measurement
+   * @brief set twistWithCovariance measurement
    */
-  void callback_twist_with_covariance(
-    geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr msg);
+  void callbackTwistWithCovariance(geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr msg);
 
   /**
    * @brief set initial_pose to current EKF pose
    */
-  void callback_initial_pose(geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
+  void callbackInitialPose(geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
 
   /**
    * @brief update predict frequency
    */
-  void update_predict_frequency(const rclcpp::Time & current_time);
+  void updatePredictFrequency(const rclcpp::Time & current_time);
 
   /**
    * @brief get transform from frame_id
    */
-  bool get_transform_from_tf(
+  bool getTransformFromTF(
     std::string parent_frame, std::string child_frame,
     geometry_msgs::msg::TransformStamped & transform);
 
   /**
    * @brief publish current EKF estimation result
    */
-  void publish_estimate_result(
+  void publishEstimateResult(
     const geometry_msgs::msg::PoseStamped & current_ekf_pose,
     const geometry_msgs::msg::PoseStamped & current_biased_ekf_pose,
     const geometry_msgs::msg::TwistStamped & current_ekf_twist);
@@ -216,28 +219,27 @@ private:
   /**
    * @brief publish diagnostics message
    */
-  void publish_diagnostics(
-    const geometry_msgs::msg::PoseStamped & current_ekf_pose, const rclcpp::Time & current_time);
+  void publishDiagnostics(const rclcpp::Time & current_time);
 
   /**
-   * @brief update simple 1d filter
+   * @brief update simple1DFilter
    */
-  void update_simple_1d_filters(
+  void updateSimple1DFilters(
     const geometry_msgs::msg::PoseWithCovarianceStamped & pose, const size_t smoothing_step);
 
   /**
-   * @brief initialize simple 1d filter
+   * @brief initialize simple1DFilter
    */
-  void init_simple_1d_filters(const geometry_msgs::msg::PoseWithCovarianceStamped & pose);
+  void initSimple1DFilters(const geometry_msgs::msg::PoseWithCovarianceStamped & pose);
 
   /**
    * @brief trigger node
    */
-  void service_trigger_node(
+  void serviceTriggerNode(
     const std_srvs::srv::SetBool::Request::SharedPtr req,
     std_srvs::srv::SetBool::Response::SharedPtr res);
 
-  autoware::universe_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
+  tier4_autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
 
   friend class EKFLocalizerTestSuite;  // for test code
 };

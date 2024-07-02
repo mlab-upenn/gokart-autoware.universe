@@ -15,19 +15,18 @@
 #include "yabloc_image_processing/graph_segment/graph_segment.hpp"
 #include "yabloc_image_processing/graph_segment/histogram.hpp"
 
-#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <opencv4/opencv2/highgui.hpp>
 #include <opencv4/opencv2/imgproc.hpp>
+#include <tier4_autoware_utils/system/stop_watch.hpp>
 #include <yabloc_common/cv_decompress.hpp>
 #include <yabloc_common/pub_sub.hpp>
 
 namespace yabloc::graph_segment
 {
-GraphSegment::GraphSegment(const rclcpp::NodeOptions & options)
-: Node("graph_segment", options),
-  target_height_ratio_(static_cast<float>(declare_parameter<float>("target_height_ratio"))),
-  target_candidate_box_width_(
-    static_cast<int>(declare_parameter<int>("target_candidate_box_width")))
+GraphSegment::GraphSegment()
+: Node("graph_segment"),
+  target_height_ratio_(declare_parameter<float>("target_height_ratio")),
+  target_candidate_box_width_(declare_parameter<int>("target_candidate_box_width"))
 {
   using std::placeholders::_1;
 
@@ -39,8 +38,8 @@ GraphSegment::GraphSegment(const rclcpp::NodeOptions & options)
   pub_debug_image_ = create_publisher<Image>("~/debug/segmented_image", 10);
 
   const double sigma = declare_parameter<double>("sigma");
-  const float k = static_cast<float>(declare_parameter<float>("k"));
-  const int min_size = static_cast<int>(declare_parameter<double>("min_size"));
+  const float k = declare_parameter<float>("k");
+  const int min_size = declare_parameter<double>("min_size");
   segmentation_ = cv::ximgproc::segmentation::createGraphSegmentation(sigma, k, min_size);
 
   // additional area pickup module
@@ -53,20 +52,16 @@ GraphSegment::GraphSegment(const rclcpp::NodeOptions & options)
 cv::Vec3b random_hsv(int index)
 {
   // It generates colors that are not too bright or too vivid, but rich in hues.
-  auto base = static_cast<double>(index);
-  return {
-    static_cast<unsigned char>(std::fmod(base * 0.7, 1.0) * 180),
-    static_cast<unsigned char>(0.7 * 255), static_cast<unsigned char>(0.5 * 255)};
+  double base = static_cast<double>(index);
+  return cv::Vec3b(std::fmod(base * 0.7, 1.0) * 180, 0.7 * 255, 0.5 * 255);
 };
 
 int GraphSegment::search_most_road_like_class(const cv::Mat & segmented) const
 {
-  const int bw = target_candidate_box_width_;
-  const float r = target_height_ratio_;
-  cv::Point2i target_px(
-    static_cast<int>(static_cast<float>(segmented.cols) * 0.5),
-    static_cast<int>(static_cast<float>(segmented.rows) * r));
-  cv::Rect2i rect(target_px + cv::Point2i(-bw, -bw), target_px + cv::Point2i(bw, bw));
+  const int W = target_candidate_box_width_;
+  const float R = target_height_ratio_;
+  cv::Point2i target_px(segmented.cols * 0.5, segmented.rows * R);
+  cv::Rect2i rect(target_px + cv::Point2i(-W, -W), target_px + cv::Point2i(W, W));
 
   std::unordered_map<int, int> areas;
   std::unordered_set<int> candidates;
@@ -74,7 +69,7 @@ int GraphSegment::search_most_road_like_class(const cv::Mat & segmented) const
     const int * seg_ptr = segmented.ptr<int>(h);
     for (int w = 0; w < segmented.cols; w++) {
       int key = seg_ptr[w];
-      areas.try_emplace(key, 0);
+      if (areas.count(key) == 0) areas[key] = 0;
       areas[key]++;
       if (rect.contains(cv::Point2i{w, h})) candidates.insert(key);
     }
@@ -98,7 +93,7 @@ void GraphSegment::on_image(const Image & msg)
   cv::resize(image, resized, cv::Size(), 0.5, 0.5);
 
   // Execute graph-based segmentation
-  autoware::universe_utils::StopWatch stop_watch;
+  tier4_autoware_utils::StopWatch stop_watch;
   cv::Mat segmented;
   segmentation_->processImage(resized, segmented);
   RCLCPP_INFO_STREAM(get_logger(), "segmentation time: " << stop_watch.toc() * 1000 << "[ms]");
@@ -116,8 +111,8 @@ void GraphSegment::on_image(const Image & msg)
   cv::Mat debug_image = cv::Mat::zeros(resized.size(), CV_8UC3);
   for (int h = 0; h < resized.rows; h++) {
     // NOTE: Accessing through ptr() is faster than at()
-    auto * const debug_image_ptr = debug_image.ptr<cv::Vec3b>(h);
-    auto * const output_image_ptr = output_image.ptr<uchar>(h);
+    cv::Vec3b * const debug_image_ptr = debug_image.ptr<cv::Vec3b>(h);
+    uchar * const output_image_ptr = output_image.ptr<uchar>(h);
     const int * const segmented_image_ptr = segmented.ptr<int>(h);
 
     for (int w = 0; w < resized.cols; w++) {
@@ -153,10 +148,10 @@ void GraphSegment::draw_and_publish_image(
 
   // Draw target rectangle
   {
-    const int w = target_candidate_box_width_;
-    const float r = target_height_ratio_;
-    cv::Point2i target(size.width / 2, static_cast<int>(static_cast<float>(size.height) * r));
-    cv::Rect2i rect(target + cv::Point2i(-w, -w), target + cv::Point2i(w, w));
+    const int W = target_candidate_box_width_;
+    const float R = target_height_ratio_;
+    cv::Point2i target(size.width / 2, size.height * R);
+    cv::Rect2i rect(target + cv::Point2i(-W, -W), target + cv::Point2i(W, W));
     cv::rectangle(show_image, rect, cv::Scalar::all(0), 2);
   }
 
@@ -164,6 +159,3 @@ void GraphSegment::draw_and_publish_image(
 }
 
 }  // namespace yabloc::graph_segment
-
-#include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(yabloc::graph_segment::GraphSegment)

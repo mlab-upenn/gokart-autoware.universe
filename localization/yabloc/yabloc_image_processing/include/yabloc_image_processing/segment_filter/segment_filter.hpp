@@ -39,7 +39,7 @@ public:
   using PointCloud2 = sensor_msgs::msg::PointCloud2;
   using Image = sensor_msgs::msg::Image;
 
-  explicit SegmentFilter(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+  SegmentFilter();
 
 private:
   using ProjectFunc = std::function<std::optional<Eigen::Vector3f>(const Eigen::Vector3f &)>;
@@ -63,14 +63,14 @@ private:
   bool define_project_func();
 
   pcl::PointCloud<pcl::PointNormal> project_lines(
-    const pcl::PointCloud<pcl::PointNormal> & points, const std::set<int> & indices,
+    const pcl::PointCloud<pcl::PointNormal> & lines, const std::set<int> & indices,
     bool negative = false) const;
 
-  static std::set<int> filter_by_mask(
+  std::set<int> filter_by_mask(
     const cv::Mat & mask, const pcl::PointCloud<pcl::PointNormal> & edges);
 
   cv::Point2i to_cv_point(const Eigen::Vector3f & v) const;
-  void execute(const PointCloud2 & line_segments_msg, const Image & segment_msg);
+  void execute(const PointCloud2 & msg1, const Image & msg2);
 
   bool is_near_element(const pcl::PointNormal & pn, pcl::PointNormal & truncated_pn) const;
 };

@@ -20,7 +20,7 @@
 #include <utility>
 #include <vector>
 
-struct EIGEN_ALIGN16 LivoxPoint
+struct LivoxPoint
 {
   float x;
   float y;
@@ -28,7 +28,7 @@ struct EIGEN_ALIGN16 LivoxPoint
   float intensity;
   std::uint8_t tag;
   std::uint8_t line;
-};
+} EIGEN_ALIGN16;
 
 POINT_CLOUD_REGISTER_POINT_STRUCT(
   LivoxPoint, (float, x, x)(float, y, y)(float, z, z)(float, intensity, intensity)(

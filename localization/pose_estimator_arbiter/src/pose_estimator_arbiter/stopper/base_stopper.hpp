@@ -20,7 +20,6 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <memory>
-#include <utility>
 
 namespace pose_estimator_arbiter::stopper
 {
@@ -29,16 +28,11 @@ class BaseStopper
 public:
   using SharedPtr = std::shared_ptr<BaseStopper>;
 
-  explicit BaseStopper(rclcpp::Node * node, std::shared_ptr<const SharedData> shared_data)
-  : logger_(node->get_logger()), shared_data_(std::move(shared_data))
+  explicit BaseStopper(rclcpp::Node * node, const std::shared_ptr<const SharedData> shared_data)
+  : logger_(node->get_logger()), shared_data_(shared_data)
   {
   }
 
-  virtual ~BaseStopper() = default;
-  BaseStopper(const BaseStopper & other) = default;
-  BaseStopper(BaseStopper && other) noexcept = default;
-  BaseStopper & operator=(const BaseStopper & other) = default;
-  BaseStopper & operator=(BaseStopper && other) noexcept = default;
   void enable() { set_enable(true); }
   void disable() { set_enable(false); }
 

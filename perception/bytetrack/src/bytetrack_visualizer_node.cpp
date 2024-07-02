@@ -128,14 +128,14 @@ void ByteTrackVisualizerNode::callback(
   }
 
   std::vector<cv::Rect> bboxes;
-  for (const auto & feat_obj : rect_msg->feature_objects) {
+  for (auto & feat_obj : rect_msg->feature_objects) {
     auto roi_msg = feat_obj.feature.roi;
     cv::Rect rect(roi_msg.x_offset, roi_msg.y_offset, roi_msg.width, roi_msg.height);
     bboxes.push_back(rect);
   }
 
   std::vector<boost::uuids::uuid> uuids;
-  for (const auto & dynamic_obj : uuid_msg->objects) {
+  for (auto & dynamic_obj : uuid_msg->objects) {
     auto uuid_msg = dynamic_obj.id.uuid;
     boost::uuids::uuid uuid_raw;
     std::copy(uuid_msg.begin(), uuid_msg.end(), uuid_raw.begin());

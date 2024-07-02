@@ -25,19 +25,11 @@ int main(int argc, char * argv[])
       node_options);
 
   // get ros parameter
-  const auto mode = node->declare_parameter<std::string>("mode");
+  const bool run_background = node->declare_parameter<bool>("run_background");
 
   // process
-  if (mode == "AUTO") {
-    node->generate_centerline();
-    node->validate();
-    node->save_map();
-  } else if (mode == "GUI") {
-    node->generate_centerline();
-  } else if (mode == "VMB") {
-    // Do nothing
-  } else {
-    throw std::invalid_argument("The `mode` is invalid.");
+  if (!run_background) {
+    node->run();
   }
 
   // NOTE: spin node to keep showing debug path/trajectory in rviz with transient local

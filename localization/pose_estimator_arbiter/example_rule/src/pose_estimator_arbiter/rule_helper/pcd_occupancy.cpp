@@ -20,11 +20,6 @@
 
 #include <pcl_conversions/pcl_conversions.h>
 
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
 namespace pose_estimator_arbiter::rule_helper
 {
 PcdOccupancy::PcdOccupancy(int pcd_density_upper_threshold, int pcd_density_lower_threshold)

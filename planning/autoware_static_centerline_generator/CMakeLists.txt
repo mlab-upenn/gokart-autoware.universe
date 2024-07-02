@@ -60,7 +60,5 @@ endif()
 
 install(PROGRAMS
   scripts/app.py
-  scripts/centerline_updater_helper.py
-  scripts/show_lanelet2_map_diff.py
   DESTINATION lib/${PROJECT_NAME}
 )

@@ -22,12 +22,14 @@
 #include <random>
 #include <vector>
 
-namespace yabloc::modularized_particle_filter::util
+namespace yabloc
 {
-inline std::random_device seed_gen;
-inline std::default_random_engine engine(seed_gen());
+namespace modularized_particle_filter::util
+{
+std::random_device seed_gen;
+std::default_random_engine engine(seed_gen());
 
-inline Eigen::Vector2d nrand_2d(const Eigen::Matrix2d & cov)
+Eigen::Vector2d nrand_2d(const Eigen::Matrix2d cov)
 {
   Eigen::JacobiSVD<Eigen::Matrix2d> svd;
   svd.compute(cov, Eigen::ComputeFullU | Eigen::ComputeFullV);
@@ -48,7 +50,7 @@ T nrand(T std)
   return dist(engine);
 }
 
-inline double normalize_radian(const double rad, const double min_rad = -M_PI)
+double normalize_radian(const double rad, const double min_rad = -M_PI)
 {
   const auto max_rad = min_rad + 2 * M_PI;
 
@@ -61,5 +63,6 @@ inline double normalize_radian(const double rad, const double min_rad = -M_PI)
   return value - std::copysign(2 * M_PI, value);
 }
 
-}  // namespace yabloc::modularized_particle_filter::util
+}  // namespace modularized_particle_filter::util
+}  // namespace yabloc
 #endif  // YABLOC_PARTICLE_FILTER__COMMON__PREDICTION_UTIL_HPP_

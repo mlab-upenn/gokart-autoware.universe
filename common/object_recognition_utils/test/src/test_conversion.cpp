@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware/universe_utils/geometry/geometry.hpp"
 #include "object_recognition_utils/conversion.hpp"
+#include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include <gtest/gtest.h>
 
@@ -28,10 +28,10 @@ geometry_msgs::msg::Point32 createPoint32(const double x, const double y, const 
   return p;
 }
 
-autoware_perception_msgs::msg::ObjectClassification createObjectClassification(
+autoware_auto_perception_msgs::msg::ObjectClassification createObjectClassification(
   const std::uint8_t label, const double probability)
 {
-  autoware_perception_msgs::msg::ObjectClassification classification;
+  autoware_auto_perception_msgs::msg::ObjectClassification classification;
   classification.label = label;
   classification.probability = probability;
 
@@ -42,10 +42,10 @@ autoware_perception_msgs::msg::ObjectClassification createObjectClassification(
 // NOTE: covariance is not checked
 TEST(conversion, test_toDetectedObject)
 {
-  using autoware_perception_msgs::msg::ObjectClassification;
+  using autoware_auto_perception_msgs::msg::ObjectClassification;
   using object_recognition_utils::toDetectedObject;
 
-  autoware_perception_msgs::msg::TrackedObject tracked_obj;
+  autoware_auto_perception_msgs::msg::TrackedObject tracked_obj;
   // existence probability
   tracked_obj.existence_probability = 1.0;
   // classification
@@ -160,10 +160,10 @@ TEST(conversion, test_toDetectedObject)
 // NOTE: covariance is not checked
 TEST(conversion, test_toTrackedObject)
 {
-  using autoware_perception_msgs::msg::ObjectClassification;
+  using autoware_auto_perception_msgs::msg::ObjectClassification;
   using object_recognition_utils::toTrackedObject;
 
-  autoware_perception_msgs::msg::DetectedObject detected_obj;
+  autoware_auto_perception_msgs::msg::DetectedObject detected_obj;
   // existence probability
   detected_obj.existence_probability = 1.0;
   // classification

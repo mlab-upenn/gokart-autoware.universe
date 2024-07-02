@@ -17,6 +17,7 @@
 /// \copyright Copyright 2021 Apex.AI, Inc.
 /// All rights reserved.
 
+#include <autoware_auto_common/common/types.hpp>
 #include <fake_test_node/fake_test_node.hpp>
 
 #include <std_msgs/msg/bool.hpp>
@@ -28,7 +29,7 @@
 #include <string>
 #include <vector>
 
-using bool8_t = bool;
+using autoware::common::types::bool8_t;
 
 using FakeNodeFixture = autoware::tools::testing::FakeTestNode;
 using FakeNodeFixtureParametrized = autoware::tools::testing::FakeTestNodeParametrized<bool8_t>;

@@ -17,12 +17,11 @@
 
 #include <string>
 
-std::string pose_delay_step_warning_message(
+std::string poseDelayStepWarningMessage(const double delay_time, const double delay_time_threshold);
+std::string twistDelayStepWarningMessage(
   const double delay_time, const double delay_time_threshold);
-std::string twist_delay_step_warning_message(
-  const double delay_time, const double delay_time_threshold);
-std::string pose_delay_time_warning_message(const double delay_time);
-std::string twist_delay_time_warning_message(const double delay_time);
-std::string mahalanobis_warning_message(const double distance, const double max_distance);
+std::string poseDelayTimeWarningMessage(const double delay_time);
+std::string twistDelayTimeWarningMessage(const double delay_time);
+std::string mahalanobisWarningMessage(const double distance, const double max_distance);
 
 #endif  // EKF_LOCALIZER__WARNING_MESSAGE_HPP_

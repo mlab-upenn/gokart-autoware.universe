@@ -22,11 +22,11 @@ template <typename Object>
 class AgedObjectQueue
 {
 public:
-  explicit AgedObjectQueue(const size_t max_age) : max_age_(max_age) {}
+  explicit AgedObjectQueue(const int max_age) : max_age_(max_age) {}
 
-  [[nodiscard]] bool empty() const { return this->size() == 0; }
+  bool empty() const { return this->size() == 0; }
 
-  [[nodiscard]] size_t size() const { return objects_.size(); }
+  size_t size() const { return objects_.size(); }
 
   Object back() const { return objects_.back(); }
 
@@ -39,7 +39,7 @@ public:
   Object pop_increment_age()
   {
     const Object object = objects_.front();
-    const size_t age = ages_.front() + 1;
+    const int age = ages_.front() + 1;
     objects_.pop();
     ages_.pop();
 
@@ -54,13 +54,13 @@ public:
   void clear()
   {
     objects_ = std::queue<Object>();
-    ages_ = std::queue<size_t>();
+    ages_ = std::queue<int>();
   }
 
 private:
-  const size_t max_age_;
+  const int max_age_;
   std::queue<Object> objects_;
-  std::queue<size_t> ages_;
+  std::queue<int> ages_;
 };
 
 #endif  // EKF_LOCALIZER__AGED_OBJECT_QUEUE_HPP_

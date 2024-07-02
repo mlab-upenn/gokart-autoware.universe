@@ -20,8 +20,11 @@
 #include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 
-sensor_msgs::msg::Imu generate_sample_imu();
-geometry_msgs::msg::TwistWithCovarianceStamped generate_sample_velocity();
-rclcpp::NodeOptions get_node_options_with_default_params();
+using geometry_msgs::msg::TwistWithCovarianceStamped;
+using sensor_msgs::msg::Imu;
+
+Imu generateSampleImu();
+TwistWithCovarianceStamped generateSampleVelocity();
+rclcpp::NodeOptions getNodeOptionsWithDefaultParams();
 
 #endif  // TEST_GYRO_ODOMETER_HELPER_HPP_

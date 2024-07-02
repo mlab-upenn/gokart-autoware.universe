@@ -22,7 +22,6 @@
 #include <yaml-cpp/yaml.h>
 
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -40,7 +39,7 @@ struct PCDFileMetadata
 std::map<std::string, PCDFileMetadata> loadPCDMetadata(const std::string & pcd_metadata_path);
 std::map<std::string, PCDFileMetadata> replaceWithAbsolutePath(
   const std::map<std::string, PCDFileMetadata> & pcd_metadata_path,
-  const std::vector<std::string> & pcd_paths, std::set<std::string> & missing_pcd_names);
+  const std::vector<std::string> & pcd_paths);
 
 bool cylinderAndBoxOverlapExists(
   const double center_x, const double center_y, const double radius,

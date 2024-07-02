@@ -26,7 +26,9 @@
 #include <optional>
 #include <string>
 
-namespace yabloc::modularized_particle_filter
+namespace yabloc
+{
+namespace modularized_particle_filter
 {
 class AbstractCorrector : public rclcpp::Node
 {
@@ -34,7 +36,7 @@ public:
   using Particle = yabloc_particle_filter::msg::Particle;
   using ParticleArray = yabloc_particle_filter::msg::ParticleArray;
 
-  explicit AbstractCorrector(const std::string & node_name, const rclcpp::NodeOptions & options);
+  explicit AbstractCorrector(const std::string & node_name);
 
 protected:
   const float acceptable_max_delay_;  // [sec]
@@ -53,6 +55,7 @@ protected:
 private:
   void on_particle_array(const ParticleArray & particle_array);
 };
-}  // namespace yabloc::modularized_particle_filter
+}  // namespace modularized_particle_filter
+}  // namespace yabloc
 
 #endif  // YABLOC_PARTICLE_FILTER__CORRECTION__ABSTRACT_CORRECTOR_HPP_

@@ -14,7 +14,7 @@
 
 #include "fault_injection/fault_injection_node.hpp"
 
-#include <autoware/universe_utils/ros/update_param.hpp>
+#include <tier4_autoware_utils/ros/update_param.hpp>
 
 #include <memory>
 #include <string>

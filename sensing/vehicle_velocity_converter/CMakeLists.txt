@@ -4,15 +4,11 @@ project(vehicle_velocity_converter)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
-ament_auto_add_library(${PROJECT_NAME} SHARED
+ament_auto_add_executable(vehicle_velocity_converter
+  src/vehicle_velocity_converter_node.cpp
   src/vehicle_velocity_converter.cpp
 )
-
-rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "VehicleVelocityConverter"
-  EXECUTABLE ${PROJECT_NAME}_node
-  EXECUTOR SingleThreadedExecutor
-)
+ament_target_dependencies(vehicle_velocity_converter)
 
 ament_auto_package(
   INSTALL_TO_SHARE

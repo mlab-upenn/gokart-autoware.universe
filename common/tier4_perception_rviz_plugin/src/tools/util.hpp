@@ -17,7 +17,7 @@
 
 #include <rviz_common/viewport_mouse_event.hpp>
 
-#include <OgreVector.h>
+#include <OgreVector3.h>
 
 #include <optional>
 

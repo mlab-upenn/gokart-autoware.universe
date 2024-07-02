@@ -24,5 +24,4 @@ rclcpp_components_register_node(image_transport_decompressor
 
 ament_auto_package(INSTALL_TO_SHARE
   launch
-  config
 )

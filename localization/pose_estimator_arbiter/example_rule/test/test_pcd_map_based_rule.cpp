@@ -19,10 +19,10 @@
 
 #include <unordered_set>
 
-class PcdMapBasedRuleMockNode : public ::testing::Test
+class MockNode : public ::testing::Test
 {
 protected:
-  void SetUp() override
+  virtual void SetUp()
   {
     rclcpp::init(0, nullptr);
     node = std::make_shared<rclcpp::Node>("test_node");
@@ -46,10 +46,10 @@ protected:
   std::shared_ptr<pose_estimator_arbiter::SharedData> shared_data_;
   std::shared_ptr<pose_estimator_arbiter::switch_rule::PcdMapBasedRule> rule_;
 
-  void TearDown() override { rclcpp::shutdown(); }
+  virtual void TearDown() { rclcpp::shutdown(); }
 };
 
-TEST_F(PcdMapBasedRuleMockNode, pcdMapBasedRule)
+TEST_F(MockNode, pcdMapBasedRule)
 {
   // Create dummy pcd and set
   {
