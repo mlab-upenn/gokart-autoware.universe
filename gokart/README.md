@@ -1,36 +1,37 @@
-# gokart-autoware
+# AV4EV Gokart Project
+## Overview  
+This is the main repo for the Autoware AV4EV gokart project developed by Autoware's Center of Excellence (CoE) at University of Pennsylvania. AV4EV stands for open-source Autonomous Vehicle software for open-standard EV platforms. The goal of this project is to develop an accessible modular electric vehicle platform with perception and planning software solutions for autonomous racing research ODD. The gokart's 1/3 scale nicely bridges the gap between full-scale vehicles and RC cars for AV research. Our AV4EV gokart participated in and won the [Autonomous Karting Series (AKS)](https://www.autonomouskartingseries.com/) National Grand Prix 2023 and 2024 competitions at Purdue University.
 
-This is the latest repo for the Autoware AV4EV gokart project. This version ported the original [gokart-sensor](https://github.com/mlab-upenn/gokart-sensor/tree/ros2_humble_purepursuit) repo (ros2_humble_purepursuit branch) into Autoware.Universe (May, 2024). Perception and planning packages developed for reactive race were also integrated. Follow the instructions to install the AV4EV gokart version of Autoware and Autoware.Universe.
+<p align="center" width="100%">
+    <img width="800" src="images/AV4EV_gokart.jpg">
+</p>
 
-To reduce the chance of dependency version conflicts, it is recommended that Autoware is installed on a new and clean Ubuntu 22.04 system. Avoid installing any other drivers/packages until this Autoware installation process is completed. The Autoware installation process would automatically install the best versions of NVIDIA driver, cuda driver, etc, for the Autoware packages.
+## gokart-autoware repo
 
-## Overview
+We ported the original [gokart-sensor](https://github.com/mlab-upenn/gokart-sensor/tree/ros2_humble_purepursuit) repo (ros2_humble_purepursuit branch) from last year into the Autoware framework (release/2024.06 version). The gokart packages are saved under the `gokart` folder under Autoware.Universe directory (gokart-autoware/src/universe/autoware.universe/). Perception and planning packages built for the reactive category race (no map) were also integrated. Follow the instructions to install the AV4EV gokart version of Autoware and Autoware.Universe.
 
-### Sensor Drivers and Manual
+To reduce the chance of dependency version conflicts, it is recommended that Autoware is installed on a new and clean Ubuntu 22.04 system. Avoid installing any other drivers/packages until this Autoware installation process is completed. The Autoware installation process will automatically install the best versions of NVIDIA driver, cuda driver, etc, for the Autoware packages.
 
-(1) Senpentrio Mosaic-H Dev Kit ([Manual](https://www.septentrio.com/en/products/gps/gnss-receiver-modules/mosaichdevkit)) + Swift Navigation RTK ([Link](https://www.swiftnav.com/skylark))
+## AV4EV Gokart links and Documentation
 
-(2) Ouster OS1 LiDAR ([Manual](https://data.ouster.io/downloads/software-user-manual/software-user-manual-v2p0.pdf) + [GitHub](https://github.com/ouster-lidar/ouster-ros/tree/ros2))
+Main website: https://mlab-upenn.github.io/av4ev_web/
 
-(3) OAK-D camera ([Manual](https://docs.luxonis.com/projects/hardware/en/latest/pages/BW1098OAK.html) + [GitHub](https://github.com/luxonis/depthai-ros))
+Hardware documentation: https://go-kart-upenn.readthedocs.io/ (pending update after AKS competition)
 
-(4) BNO055 IMU ([Manual](https://cdn-shop.adafruit.com/datasheets/BST_BNO055_DS000_12.pdf)) + LC231X UART to Serial Module ([Manual](https://www.digikey.com/en/products/detail/ftdi-future-technology-devices-international-ltd/LC231X/6823712))
+Embedded system software: https://github.com/mlab-upenn/gokart-mechatronics (pending update after AKS competition)
 
+AV4EV gokart simulator: https://github.com/mlab-upenn/AV4EV_Sim
 
-### Mapping & Localization
+Reactive-category simulation: https://youtu.be/gzHu0ZZdxbY
 
-We use Lidarslam package ([link](https://github.com/rsasaki0109/lidarslam_ros2)) to perform the 3D slam. 
+Pennovation environment preview: https://www.youtube.com/watch?v=lOTM_DDfbcE
 
-> ├── Localization **[under dev]**
->
-> │   └── ros2_python_pkg
->
-> ├── Slam
->
-> │   └── lidarslam_ros2
+AKS 2024 race vidoes:  
+    Open-category (map allowed): https://www.youtube.com/watch?v=pdBTIgp2APQ  
+    Reavtive-category (map not allowed): https://www.youtube.com/watch?v=RrzQWShv_7Y  
 
 
-# Installation for AV4EV Gokart-Autoware
+# Installation Instruction for AV4EV Gokart-Autoware
 
 ## Prerequisites
 Ubuntu 22.04  
@@ -56,7 +57,7 @@ pip install pyserial
 This is the modified instruction of [Autoware installation from source](https://autowarefoundation.github.io/autoware-documentation/main/installation/autoware/source-installation/)
 
 ### 1. Set up Autoware development environment
-Clone the gokart-autoware repo (forked from Autoware, May 2024) and move to the directory.
+Clone the gokart-autoware repo and move to the directory.
 
 ```
 git clone https://github.com/mlab-upenn/gokart-autoware
@@ -64,7 +65,7 @@ cd gokart-autoware
 ```
 
 ### 2. Install environment dependencies using the provided Ansible script.
-Enter `Y` when asked whether to install NVIDIA or Cuda drivers
+Enter `Y` when asked to install NVIDIA or Cuda drivers
 
 ```
 ./setup-dev-env.sh
@@ -85,7 +86,7 @@ Autoware requires some ROS 2 packages in addition to the core components. The to
 ```
 source /opt/ros/humble/setup.bash
 rosdep update
-rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO
+rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO -r
 ```
 
 Build the workspace.
@@ -95,7 +96,7 @@ Autoware uses colcon to build workspaces. For more advanced options, refer to th
 colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
 ```
 
-### 4. Set up Udev rules
+## 4. Set up Udev rules and Ethernet
 
 BNO055 IMU
 ```bash
@@ -126,13 +127,11 @@ Unplug and replug in the devices. and you should find the devices by running
 ls /dev/sensors
 ```
 
-## Usage
-
-### Hardware Setting
-
-**Ethernet**
+Ethernet
 
 The Ouster is connected to the laptop through ethernet cable. After connecting, choose manual configuration and under IPv4, set Address to 192.0.2.200 and Netmask to 255.255.255.0. Restart your system and ping 192.0.2.100 to verify succesful connection.
+
+# Usage
 
 ### Sensor Drivers
 
@@ -170,10 +169,26 @@ ros2 topic list
 ros2 topic echo <topic name> --no-arr
 ```
 
+## Run Open-Category
+Under development
 
-## Reference Links
+## Run Reactive-Category
+Under development
 
-### Tmux intro
+
+# Reference Links
+
+## Sensor Drivers and Manual
+
+(1) Senpentrio Mosaic-H Dev Kit ([Manual](https://www.septentrio.com/en/products/gps/gnss-receiver-modules/mosaichdevkit)) + Swift Navigation RTK ([Link](https://www.swiftnav.com/skylark))
+
+(2) Ouster OS1 LiDAR ([Manual](https://data.ouster.io/downloads/software-user-manual/software-user-manual-v2p0.pdf) + [GitHub](https://github.com/ouster-lidar/ouster-ros/tree/ros2))
+
+(3) OAK-D camera ([Manual](https://docs.luxonis.com/projects/hardware/en/latest/pages/BW1098OAK.html) + [GitHub](https://github.com/luxonis/depthai-ros))
+
+(4) BNO055 IMU ([Manual](https://cdn-shop.adafruit.com/datasheets/BST_BNO055_DS000_12.pdf)) + LC231X UART to Serial Module ([Manual](https://www.digikey.com/en/products/detail/ftdi-future-technology-devices-international-ltd/LC231X/6823712))
+
+## Tmux intro
 
 A cheatsheet for the original tmux shortcut keys can be found [here](https://tmuxcheatsheet.com/). To know about how to change the configuration of tmux to make it more  useable (for example, if you want to toggle the mouse mode on when you  start a tmux bash session or change the shortcut keys), you can find a  tutorial [here](https://www.hamvocke.com/blog/a-guide-to-customizing-your-tmux-conf/).
 
