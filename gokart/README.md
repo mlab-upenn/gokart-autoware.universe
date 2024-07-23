@@ -170,24 +170,24 @@ ros2 topic echo <topic name> --no-arr
 ```
 
 ## Run Open-Category
-1. Make sure the following connections:
-a. FixPosition(VISION-RTK 2)
-b. Serial
-2. Open Terminal and go to workspace, source underlay and overlay workspace
+### 1. Make sure the following connections:
+#### a. FixPosition(VISION-RTK 2)
+#### b. Serial
+### 2. Open Terminal and go to workspace, source underlay and overlay workspace
 ```
 source /opt/ros/humble/setup.bash
 source install/setup.bash
 ```
-3. Run the following 3 launch files
-a. FixPosition
+### 3. Run the following 3 launch files
+#### a. FixPosition
 ```
 ros2 launch fixposition_driver_ros2 tcp.launch
 ```
-b. Serial
+#### b. Serial
 ```
 ros2 launch serial_driver serial_driver
 ```
-c. Pure pursuit
+#### c. Pure pursuit
 ```
 ros2 launch pure_pursuit purepursuit.launch.py
 ```
