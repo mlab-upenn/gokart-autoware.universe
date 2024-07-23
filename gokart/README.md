@@ -170,7 +170,7 @@ ros2 topic echo <topic name> --no-arr
 ```
 
 ## Run Open-Category
-### 1. Make sure the following connections:
+### 1. Make sure the following connections
 #### a. FixPosition(VISION-RTK 2)
 #### b. Serial
 ### 2. Open Terminal and go to workspace, source underlay and overlay workspace
