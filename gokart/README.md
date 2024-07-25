@@ -185,11 +185,11 @@ ros2 launch fixposition_driver_ros2 tcp.launch
 ```
 #### b. Serial
 ```
-ros2 launch serial_driver serial_driver
+ros2 launch serial_driver serial_driver_bridge_node.launch.py
 ```
 #### c. Pure pursuit
 ```
-ros2 launch pure_pursuit purepursuit.launch.py
+ros2 launch kart_pure_pursuit purepursuit.launch.py
 ```
 
 
