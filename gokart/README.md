@@ -170,6 +170,7 @@ ros2 topic echo <topic name> --no-arr
 ```
 
 ## Run Open-Category
+### Run in real-world environment
 ### 1. Make sure the following connections
 #### a. FixPosition(VISION-RTK 2)
 #### b. Serial
@@ -191,6 +192,22 @@ ros2 launch serial_driver serial_driver_bridge_node.launch.py
 ```
 ros2 launch kart_pure_pursuit purepursuit.launch.py
 ```
+### Run in simulator
+Follow [this link](https://github.com/mlab-upenn/AV4EV_Sim) to download and install the gokart simulator AV4EV_Sim.
+
+<p align="center" width="100%">
+    <img width="600" src="images/AV4EV_Sim_Purdue.png">
+</p>
+
+#### Spawn the Go-Kart in the Environment
+
+1. On the top left corner, select `Free` and then `Editor Mode`.
+
+2. Select the drop-down menu to the right (cube with green plus sign). Under `SODA Vehicles`, select and drag `Kart Full` into the scene where you’d like to place the vehicle.
+
+3. You may hit `X` (top right corner) to close the Editor Mode window after placing the go-kart to show the full UI. Editor Mode is used to edit component properties.
+
+#### Turn on the 
 
 
 ## Run Reactive-Category
