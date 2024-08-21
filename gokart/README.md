@@ -193,13 +193,14 @@ ros2 launch serial_driver serial_driver_bridge_node.launch.py
 ros2 launch kart_pure_pursuit purepursuit.launch.py
 ```
 ### Run in simulator
+### 1. Download and install AV4EV_Sim
 Follow [this link](https://github.com/mlab-upenn/AV4EV_Sim) to download and install the gokart simulator AV4EV_Sim.
 
 <p align="center" width="100%">
     <img width="600" src="images/AV4EV_Sim_Purdue.png">
 </p>
 
-#### Spawn the Go-Kart in the Environment
+### 2. Spawn the Go-Kart in the Environment
 
 1. On the top left corner, select `Free` and then `Editor Mode`.
 
@@ -207,7 +208,35 @@ Follow [this link](https://github.com/mlab-upenn/AV4EV_Sim) to download and inst
 
 3. You may hit `X` (top right corner) to close the Editor Mode window after placing the go-kart to show the full UI. Editor Mode is used to edit component properties.
 
-#### Turn on the 
+4. Hit `M` to toggle from the keyboard manual control to the autonoumous mode.
+
+5. Hit the green triangle `Run` button to start the simulation.  
+
+### 3. Collecting the waypoint in the simulator
+
+1. Open Terminal and go to workspace, source underlay and overlay workspace
+```
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+```
+2. Run the following launch file
+```
+ros2 launch kart_pure_pursuit wp_collection_sim.launch.py
+```
+The csv file recording the waypoint will save automatically. 
+
+### 4. Run Pure Pursuit
+
+1. Open Terminal and go to workspace, source underlay and overlay workspace
+```
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+```
+2. Run the following launch file
+```
+ros2 launch kart_pure_pursuit purepursuit_sim.launch.py
+```
+The gokart will drive automatically in the simulator.
 
 
 ## Run Reactive-Category
