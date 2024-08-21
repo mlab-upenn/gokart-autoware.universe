@@ -29,6 +29,8 @@ setup(
     entry_points={
         'console_scripts': [
             f'kart_purepursuit_node = {package_name}.kart_purepursuit_node:main',
+            f'kart_purepursuit_node_sim = {package_name}.kart_purepursuit_node_sim:main',
+            f'wp_record_node_sim = {package_name}.wp_record_node_sim:main',
             f'visualize_node = {package_name}.visualize_node:main',
             f'wp_record_node = {package_name}.wp_record_node:main',
         ],

@@ -31,7 +31,7 @@ purepursuit_node:
     vel_scale: 1.0
     wp_corner_filename: corner_wp_idx.npy
     wp_delim: ','
-    wp_filename: wp.csv
+    wp_filename: wp_sim.csv
     wp_overtake_filename: overtake_wp_idx.npy
     wp_skiprows: 1
     wp_x_idx: 0
@@ -43,7 +43,7 @@ visualize_node:
     wp_centerline_filename: wp.csv
     wp_corner_filename: corner_wp_idx.npy
     wp_delim: ','
-    wp_filename: wp.csv
+    wp_filename: wp_sim.csv
     wp_overtake_filename: overtake_wp_idx.npy
     wp_skiprows: 1
     wp_track_width: 3.6
