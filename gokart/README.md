@@ -208,9 +208,9 @@ Follow [this link](https://github.com/mlab-upenn/AV4EV_Sim) to download and inst
 
 3. You may hit `X` (top right corner) to close the Editor Mode window after placing the go-kart to show the full UI. Editor Mode is used to edit component properties.
 
-4. Hit `M` to toggle from the keyboard manual control to the autonoumous mode.
+4. Hit the green triangle `Run` button to start the simulation.
 
-5. Hit the green triangle `Run` button to start the simulation.  
+5. Hit `M` to toggle from the keyboard manual control to the autonoumous mode.
 
 ### 3. Collecting the waypoint in the simulator
 
